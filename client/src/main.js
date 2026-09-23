@@ -12,6 +12,7 @@ import { runCheckin } from './views/checkin.js';
 import { openHelp } from './components/resources.js';
 import { configureExercises } from './components/exercise.js';
 import { renderLibrary } from './views/library.js';
+import { renderSources } from './views/sources.js';
 
 // Si le serveur ne répond pas, le bouton « Besoin d'aide » doit quand même fonctionner.
 const FALLBACK_HELP = {
@@ -23,6 +24,7 @@ const FALLBACK_HELP = {
   professionnels: [],
 };
 
+document.getElementById('sources-link').addEventListener('click', () => state.meta && showSources());
 document.getElementById('help-fab').addEventListener('click', () => openHelp(state.meta?.help ?? FALLBACK_HELP, state.user?.profile));
 
 const root = document.getElementById('app');
@@ -166,6 +168,15 @@ async function showHome(view = null) {
 async function showLibrary() {
   state.today ??= await api.today(state.user.id, localDay());
   mount((el) => renderLibrary(el, { meta: state.meta, today: state.today, onBack: guard(() => showHome()) }));
+}
+
+function showSources() {
+  mount((el) =>
+    renderSources(el, {
+      meta: state.meta,
+      onBack: guard(() => (state.history.length ? showHome() : showWelcome())),
+    }),
+  );
 }
 
 async function eraseEverything() {

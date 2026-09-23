@@ -9,3 +9,4 @@ export { recommend, getNudge, EXERCISES, EXERCISE_CATEGORIES, CATALOG_IDS } from
 export { compareResults } from './comparison.js';
 export { createCoreService, memoryStore, ServiceError, DISCLAIMER } from './service.js';
 export { DEMO_SCENARIOS, getScenario, autoAnswer, seedDemo } from './demo.js';
+export { SOURCES, SOURCE_CATEGORIES, GLOSSARY, EXERCISE_SOURCES, sourceById, doiUrl, shortCite } from './sources.js';

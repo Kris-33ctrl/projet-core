@@ -3,6 +3,7 @@
 // Seul le fait d'avoir terminé l'exercice est noté (pour « ta semaine »).
 
 import { h } from '../dom.js';
+import { shortCite, doiUrl } from '@core/engine';
 import { openModal, closeModal } from './modal.js';
 
 const KIND = { exercice: 'Exercice', outil: 'Outil', article: 'À lire' };
@@ -319,6 +320,19 @@ export function openExercise(exercise) {
       h('p', { class: 'lead', text: exercise.summary }),
       h('div', { class: 'ex-why' }, h('h3', { text: 'Pourquoi ça aide' }), h('p', { class: 'muted', text: exercise.why })),
       h('div', { class: 'ex-why' }, h('h3', { text: 'Quand l’utiliser' }), h('p', { class: 'muted', text: exercise.when })),
+      exercise.sources?.length
+        ? h(
+            'p',
+            { class: 'small muted ex-sources' },
+            'Sources : ',
+            exercise.sources.map((s, i) => [
+              i ? ' · ' : '',
+              h('a', { href: doiUrl(s.doi), target: '_blank', rel: 'noopener', title: s.title, text: shortCite(s) }),
+            ]),
+          )
+        : exercise.sourceNote
+          ? h('p', { class: 'small muted ex-sources', text: exercise.sourceNote })
+          : null,
     );
     footer.replaceChildren(h('button', { type: 'button', class: 'btn btn-primary', onClick: () => go(0) }, exercise.kind === 'article' ? 'Lire' : 'Commencer'));
   }

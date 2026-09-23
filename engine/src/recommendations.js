@@ -14,6 +14,8 @@
 //   check   : cases à cocher
 //   summary : relire ce qu'on a écrit (reste à l'écran, jamais enregistré)
 
+import { EXERCISE_SOURCES, NO_SOURCE_NOTE, sourceById } from './sources.js';
+
 const CATALOG = [
   {
     id: 'coherence_cardiaque',
@@ -343,7 +345,12 @@ function between(value, min, max) {
   return value !== null && value !== undefined && value >= min && value < max;
 }
 
-const publicExercise = ({ trigger, ...rest }) => rest;
+// Chaque exercice expose ses sources (voir sources.js), ou une note quand il n'en a pas.
+const publicExercise = ({ trigger, ...rest }) => ({
+  ...rest,
+  sources: (EXERCISE_SOURCES[rest.id] ?? []).map((id) => sourceById[id]),
+  sourceNote: NO_SOURCE_NOTE[rest.id] ?? null,
+});
 
 export const EXERCISES = CATALOG.map(publicExercise);
 export const CATALOG_IDS = CATALOG.map((c) => c.id);

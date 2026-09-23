@@ -20,6 +20,7 @@ import { evaluateShield, screeningContext, vigilanceSignals, RESOURCES } from '.
 import { planCheckin, summarizeCheckin } from './checkin.js';
 import { recommend, EXERCISES, EXERCISE_CATEGORIES } from './recommendations.js';
 import { compareResults } from './comparison.js';
+import { SOURCES, SOURCE_CATEGORIES, GLOSSARY, SOURCES_CHECKED_ON } from './sources.js';
 
 export const DISCLAIMER =
   "Core est un outil de prévention et de connaissance de soi. Il ne pose pas de diagnostic et ne remplace pas un avis médical ou psychologique.";
@@ -132,6 +133,7 @@ export function createCoreService(store, { clock = () => new Date() } = {}) {
         help: { urgence: RESOURCES.urgence, ecoute: RESOURCES.ecoute, professionnels: RESOURCES.professionnels },
         exercises: EXERCISES,
         exerciseCategories: EXERCISE_CATEGORIES,
+        sources: { list: SOURCES, categories: SOURCE_CATEGORIES, glossary: GLOSSARY, checkedOn: SOURCES_CHECKED_ON },
         disclaimer: DISCLAIMER,
       };
     },

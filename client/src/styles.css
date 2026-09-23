@@ -1141,7 +1141,32 @@ p {
 
 /* ── Bouton « Besoin d'aide » ────────────────────────────── */
 .shell {
-  padding-bottom: max(96px, env(safe-area-inset-bottom));
+  padding-bottom: 24px;
+}
+
+/* Pied de page commun : lien vers les sources, place laissée au bouton « Besoin d'aide ». */
+.site-footer {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding-inline: 20px;
+  padding-block: 0 max(96px, env(safe-area-inset-bottom));
+}
+
+.footer-link {
+  appearance: none;
+  border: 0;
+  background: none;
+  padding: 6px 0;
+  font: inherit;
+  font-size: 0.86rem;
+  color: var(--ink-soft);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.footer-link:hover {
+  color: var(--ink);
 }
 
 .help-fab {
@@ -1644,4 +1669,87 @@ p {
 
 .dev-status:empty {
   display: none;
+}
+
+/* ── Sources et méthode ─────────────────────────────────── */
+.notice-card {
+  padding: 16px 18px;
+  border-radius: var(--radius-m);
+  border: 1px solid var(--line);
+  background: var(--glass-strong);
+  color: var(--ink-soft);
+  max-width: 72ch;
+}
+
+.glossary {
+  display: grid;
+  grid-template-columns: minmax(160px, 240px) minmax(0, 1fr);
+  gap: 14px 24px;
+  margin: 0;
+}
+
+.glossary dt {
+  font-family: var(--font-display);
+  font-weight: 600;
+}
+
+.glossary dd {
+  margin: 0;
+  display: grid;
+  gap: 4px;
+  color: var(--ink-soft);
+  max-width: 68ch;
+}
+
+.refs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  font-size: 0.84rem;
+}
+
+.sources-page a {
+  color: var(--accent);
+  text-underline-offset: 3px;
+}
+
+.sources {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 16px;
+}
+
+.source {
+  display: grid;
+  gap: 4px;
+  padding: 8px 10px;
+  margin: 0 -10px;
+  border-radius: var(--radius-s);
+  transition: background 0.6s ease;
+}
+
+.source.flash {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+.cite {
+  max-width: 80ch;
+  overflow-wrap: anywhere;
+}
+
+.ex-sources a {
+  color: var(--accent);
+}
+
+@media (max-width: 820px) {
+  .glossary {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
+  }
+
+  .glossary dd {
+    margin-bottom: 12px;
+  }
 }

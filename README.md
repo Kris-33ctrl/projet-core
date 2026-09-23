@@ -42,6 +42,7 @@ Les scénarios sont définis dans `engine/src/demo.js` et testés comme le reste
 - **Exercices** (contenu, étapes, déclencheurs) : `engine/src/recommendations.js`. Lecteur interactif : `client/src/components/exercise.js`.
 - **Comparaison entre bilans** : `engine/src/comparison.js` (seuil de variation dans `config.js`, `COMPARISON`).
 - **Logique applicative** (profil, bilan, check-in, bouclier, effacement) : `engine/src/service.js`.
+- **Sources et lexique** (page « Sources et méthode », sources des exercices) : `engine/src/sources.js`. Chaque référence y indique ce qu'elle justifie ; les DOI ont été vérifiés dans Crossref et Europe PMC.
 
 ## Choix d'interprétation du PDF
 
