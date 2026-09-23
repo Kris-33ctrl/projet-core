@@ -78,6 +78,11 @@
   box-sizing: border-box;
 }
 
+/* `hidden` doit toujours gagner, même sur un élément dont le style fixe `display`. */
+[hidden] {
+  display: none !important;
+}
+
 html {
   background: var(--ground-2);
 }
@@ -1597,4 +1602,46 @@ p {
     grid-column: 1 / -1;
     grid-row: 3;
   }
+}
+
+/* ── Outils de développement (npm run dev uniquement) ────── */
+.dev-fab {
+  position: fixed;
+  left: 16px;
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  z-index: 10;
+  appearance: none;
+  border: 1.5px dashed var(--ink-faint);
+  background: var(--ground);
+  color: var(--ink-soft);
+  font: 600 0.75rem/1 ui-monospace, 'SF Mono', Menlo, monospace;
+  letter-spacing: 0.1em;
+  padding: 10px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.dev-scenarios {
+  display: grid;
+  gap: 8px;
+}
+
+.dev-select {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.dev-select select {
+  font: inherit;
+  color: var(--ink);
+  padding: 8px 10px;
+  border-radius: var(--radius-s);
+  border: 1px solid var(--line);
+  background: var(--glass-strong);
+}
+
+.dev-status:empty {
+  display: none;
 }

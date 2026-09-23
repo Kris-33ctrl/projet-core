@@ -6,12 +6,13 @@ import { openIdbStore } from './idb.js';
 
 let persistent = true;
 
-const ready = openIdbStore()
-  .catch(() => {
-    persistent = false;
-    return memoryStore();
-  })
-  .then((store) => createCoreService(store));
+// Exporté pour les outils de développement (scénarios de démo), qui écrivent dans le même stockage.
+export const storeReady = openIdbStore().catch(() => {
+  persistent = false;
+  return memoryStore();
+});
+
+const ready = storeReady.then((store) => createCoreService(store));
 
 export const isPersistent = async () => (await ready, persistent);
 

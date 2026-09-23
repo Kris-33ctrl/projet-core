@@ -8,3 +8,4 @@ export { planCheckin, summarizeCheckin, rotatingSphere } from './checkin.js';
 export { recommend, getNudge, EXERCISES, EXERCISE_CATEGORIES, CATALOG_IDS } from './recommendations.js';
 export { compareResults } from './comparison.js';
 export { createCoreService, memoryStore, ServiceError, DISCLAIMER } from './service.js';
+export { DEMO_SCENARIOS, getScenario, autoAnswer, seedDemo } from './demo.js';

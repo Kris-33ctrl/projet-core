@@ -1,5 +1,5 @@
 import './styles.css';
-import { api, isPersistent } from './api.js';
+import { api, isPersistent, storeReady } from './api.js';
 import { h, localDay } from './dom.js';
 import { storage } from './storage.js';
 import { closeModal } from './components/modal.js';
@@ -229,3 +229,21 @@ async function boot() {
 }
 
 boot();
+
+// Outils de développement (npm run dev uniquement) : scénarios de démo, bilan et check-in express.
+if (import.meta.env.DEV) {
+  import('./dev/panel.js').then(({ mountDevPanel }) =>
+    mountDevPanel({
+      api,
+      storeReady,
+      getState: () => state,
+      actions: {
+        refresh: async () => {
+          if (state.user) state.history = await api.history(state.user.id);
+        },
+        openResult: (id) => openResult(id),
+        home: () => showHome(),
+      },
+    }),
+  );
+}

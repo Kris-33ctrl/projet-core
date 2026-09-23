@@ -13,6 +13,16 @@ npm test           # tests du moteur et du service
 
 Version compilée : `npm run build && npm start`, puis http://localhost:4173.
 
+### Mode développement
+
+Avec `npm run dev`, un bouton **DEV** apparaît en bas à gauche (il n'existe pas dans la version compilée) :
+
+- **Scénarios de démo** : remplace les données du navigateur par 3 semaines d'historique (bilans il y a 16, 9 et 2 jours, check-ins, exercices), générées par le vrai moteur avec une horloge simulée. Cinq cas : équilibre qui progresse, Machine épuisée (bridage), surcharge persistante (relais), soupapes en tension, réseau solide avec charge élevée.
+- **Bilan express** / **Check-in express** : réponses automatiques façon scénario choisi, on arrive directement au résultat.
+- **Dernier bilan**, **Tout effacer**.
+
+Les scénarios sont définis dans `engine/src/demo.js` et testés comme le reste du moteur.
+
 **Local-first** : tout tourne dans le navigateur. Les bilans, check-ins et exercices sont stockés dans IndexedDB, sur l'appareil ; aucune donnée de santé ne part sur un serveur. L'app compilée (`client/dist`) peut être hébergée comme un simple site statique. Prérequis : Node.js ≥ 20 pour développer.
 
 ## Organisation
