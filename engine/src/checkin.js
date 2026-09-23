@@ -5,6 +5,7 @@ import { TRIAGE as T } from './config.js';
 import { DAILY_QUESTIONS, publicQuestion } from './questions.js';
 import { SCREENING_QUESTIONS } from './screening.js';
 import { getNudge } from './recommendations.js';
+import { GAME_FOR_DAILY, gameSummary } from './games.js';
 
 const BY_ID = Object.fromEntries(DAILY_QUESTIONS.map((q) => [q.id, q]));
 const FIXED = ['daily.battery', 'daily.mood', 'daily.clarity'];
@@ -54,7 +55,13 @@ export function summarizeCheckin(answers) {
     .filter(([id, v]) => id in BY_ID && typeof v === 'number')
     .map(([id, v]) => [id, 100 - v])
     .sort((a, b) => a[1] - b[1])[0] ?? [null, 100];
-  const suggestion = lowest < 40 ? getNudge(SUGGESTIONS[lowestId]) : null;
+  // Un mini-jeu quand il en existe un pour cette carte, sinon l'exercice correspondant.
+  const suggestion =
+    lowest < 40
+      ? GAME_FOR_DAILY[lowestId]
+        ? gameSummary(GAME_FOR_DAILY[lowestId])
+        : { type: 'exercise', ...getNudge(SUGGESTIONS[lowestId]) }
+      : null;
 
   return { levels, alert: Boolean(alert), suggestion };
 }

@@ -3,6 +3,7 @@
 
 import { SPHERES, SPHERE_LABELS, COMPARISON as C } from './config.js';
 import { SPHERE_WEIGHTS, SUB_LABELS } from './scoring.js';
+import { GAME_FOR_SUB } from './games.js';
 
 const round = (v) => Math.round(v * 10) / 10;
 
@@ -53,7 +54,7 @@ export function compareResults(current, previous, { since = null } = {}) {
     .filter((s) => s.trend === 'down')
     .sort((a, b) => a.delta - b.delta)
     .slice(0, C.maxHighlights)
-    .map((s) => ({ ...s, exercise: EXERCISE_FOR_SUB[s.id] ?? null }));
+    .map((s) => ({ ...s, exercise: EXERCISE_FOR_SUB[s.id] ?? null, game: GAME_FOR_SUB[s.id] ?? null }));
 
   let summary;
   if (improvements.length && attention.length) {

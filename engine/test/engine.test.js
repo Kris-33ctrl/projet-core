@@ -235,7 +235,9 @@ test('check-in : 3 cartes fixes, 1 carte de la sphère la plus basse, PHQ-4 si d
   const summary = summarizeCheckin({ 'daily.battery': 20, 'daily.mood': 80, 'daily.clarity': 30, 'daily.connection': 40 });
   assert.equal(summary.levels.mood, 20);
   assert.ok(summary.alert, 'météo > 70 = jour d’alerte');
-  assert.equal(summary.suggestion.id, 'coherence_cardiaque');
+  assert.equal(summary.suggestion.id, 'vague', 'la météo la plus basse propose La vague');
+  assert.equal(summary.suggestion.type, 'game');
+  assert.equal(summarizeCheckin({ 'daily.battery': 90, 'daily.mood': 20, 'daily.clarity': 20, 'daily.connection': 20 }).suggestion.type, 'exercise');
   assert.equal(summarizeCheckin({ 'daily.battery': 10, 'daily.mood': 10, 'daily.clarity': 10, 'daily.connection': 10 }).suggestion, null);
 });
 

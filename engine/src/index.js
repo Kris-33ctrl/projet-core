@@ -10,3 +10,4 @@ export { compareResults } from './comparison.js';
 export { createCoreService, memoryStore, ServiceError, DISCLAIMER } from './service.js';
 export { DEMO_SCENARIOS, getScenario, autoAnswer, seedDemo } from './demo.js';
 export { SOURCES, SOURCE_CATEGORIES, GLOSSARY, EXERCISE_SOURCES, sourceById, doiUrl, shortCite } from './sources.js';
+export { GAMES, READY_GAMES, RELAY_GAMES, MAX_GAME_SECONDS, gameById } from './games.js';

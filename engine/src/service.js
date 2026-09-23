@@ -20,7 +20,8 @@ import { evaluateShield, screeningContext, vigilanceSignals, RESOURCES } from '.
 import { planCheckin, summarizeCheckin } from './checkin.js';
 import { recommend, EXERCISES, EXERCISE_CATEGORIES } from './recommendations.js';
 import { compareResults } from './comparison.js';
-import { SOURCES, SOURCE_CATEGORIES, GLOSSARY, SOURCES_CHECKED_ON } from './sources.js';
+import { SOURCES, SOURCE_CATEGORIES, GLOSSARY, SOURCES_CHECKED_ON, sourceById } from './sources.js';
+import { GAMES, READY_GAMES, RELAY_GAMES } from './games.js';
 
 export const DISCLAIMER =
   "Core est un outil de prévention et de connaissance de soi. Il ne pose pas de diagnostic et ne remplace pas un avis médical ou psychologique.";
@@ -72,6 +73,15 @@ export function createCoreService(store, { clock = () => new Date() } = {}) {
       .filter((c) => c.day >= since)
       .sort((a, b) => a.day.localeCompare(b.day))
       .map((c) => ({ day: c.day, summary: c.summary }));
+  }
+
+  // Éclats et Atlas : ce qui est acquis ne se perd jamais. Les pratiques faites en relais restent discrètes.
+  async function progression(userId) {
+    const counted = (await store.list('practices', userId)).filter((p) => !p.quiet);
+    return {
+      eclats: counted.length,
+      atlas: [...new Set(counted.filter((p) => p.kind === 'game').map((p) => p.activityId))],
+    };
   }
 
   async function recentPractices(userId, sinceDays = 14) {
@@ -133,6 +143,8 @@ export function createCoreService(store, { clock = () => new Date() } = {}) {
         help: { urgence: RESOURCES.urgence, ecoute: RESOURCES.ecoute, professionnels: RESOURCES.professionnels },
         exercises: EXERCISES,
         exerciseCategories: EXERCISE_CATEGORIES,
+        games: GAMES.map((g) => ({ ...g, card: { ...g.card, sources: g.card.sources.map((id) => sourceById[id]) } })),
+        relayGames: RELAY_GAMES,
         sources: { list: SOURCES, categories: SOURCE_CATEGORIES, glossary: GLOSSARY, checkedOn: SOURCES_CHECKED_ON },
         disclaimer: DISCLAIMER,
       };
@@ -183,7 +195,8 @@ export function createCoreService(store, { clock = () => new Date() } = {}) {
         checkin: todayCheckin,
         plan: last && !todayCheckin ? planCheckin({ lastResult, screeningDue: shield.screeningDue, profile: user.profile }) : [],
         week,
-        practices: (await recentPractices(user.id, 7)).map((p) => ({ exerciseId: p.exerciseId, completedAt: p.completedAt })),
+        practices: (await recentPractices(user.id, 7)).map((p) => ({ activityId: p.activityId, kind: p.kind, completedAt: p.completedAt })),
+        ...(await progression(user.id)),
         shield,
         lastBilan: last
           ? {
@@ -224,13 +237,19 @@ export function createCoreService(store, { clock = () => new Date() } = {}) {
       return service.today(userId, day);
     },
 
-    // Un exercice pratiqué jusqu'au bout. Rien de ce qui a été écrit pendant l'exercice n'est gardé.
-    async logPractice(userId, exerciseId, { durationSec = null } = {}) {
-      await requireUser(userId);
-      if (!EXERCISES.some((e) => e.id === exerciseId)) throw new ServiceError(400, `Exercice inconnu : ${exerciseId}`);
-      const record = { id: uuid(), userId, exerciseId, durationSec, completedAt: nowIso() };
+    // Un exercice ou un mini-jeu terminé. Rien de ce qui a été écrit ou joué n'est gardé, seulement le fait.
+    // En relais, la pratique est notée discrètement : pas d'éclat ni de carte nouvelle, l'enjeu est ailleurs.
+    async logPractice(userId, activityId, { durationSec = null } = {}) {
+      const user = await requireUser(userId);
+      const kind = EXERCISES.some((e) => e.id === activityId) ? 'exercise' : READY_GAMES.some((g) => g.id === activityId) ? 'game' : null;
+      if (!kind) throw new ServiceError(400, `Activité inconnue : ${activityId}`);
+      const [last] = await completedBilans(user.id);
+      const shield = await shieldFor(user, last ? resultView(last) : null);
+      const before = await progression(user.id);
+      const record = { id: uuid(), userId, activityId, kind, durationSec, quiet: shield.level === 'relais', completedAt: nowIso() };
       await store.put('practices', record);
-      return record;
+      const after = await progression(user.id);
+      return { ...record, ...after, newCard: after.atlas.length > before.atlas.length };
     },
 
     async startAssessment(userId) {

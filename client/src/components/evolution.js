@@ -5,6 +5,11 @@
 import { h, sphereColor, formatDate, qualitative } from '../dom.js';
 import { openExercise } from './exercise.js';
 
+let playGame = null;
+export function configureEvolution({ onPlay }) {
+  playGame = onPlay;
+}
+
 const TREND = {
   up: { icon: '↗', label: 'en hausse' },
   stable: { icon: '→', label: 'stable' },
@@ -60,7 +65,7 @@ function sparkline(points, sphere, label) {
   return el;
 }
 
-function highlightList(title, items, { exercises, empty }) {
+function highlightList(title, items, { exercises, games = {}, empty }) {
   return h(
     'div',
     { class: 'evo-list' },
@@ -71,13 +76,17 @@ function highlightList(title, items, { exercises, empty }) {
           {},
           items.map((item) => {
             const exercise = item.exercise ? exercises[item.exercise] : null;
+            const game = item.game && playGame ? games[item.game] : null;
             return h(
               'li',
               {},
               h('span', { class: 'evo-item' }, h('i', { class: 'dot', style: { '--c': sphereColor(item.sphere) } }), h('span', { text: item.label }), h('span', { class: 'evo-icon', 'aria-hidden': 'true', text: TREND[item.trend].icon })),
-              exercise
-                ? h('button', { type: 'button', class: 'btn btn-quiet btn-small', onClick: () => openExercise(exercise) }, `Essayer : ${exercise.title}`)
-                : null,
+              h(
+                'span',
+                { class: 'actions' },
+                game ? h('button', { type: 'button', class: 'btn btn-quiet btn-small', onClick: () => playGame(game) }, `Jouer : ${game.title}`) : null,
+                exercise ? h('button', { type: 'button', class: 'btn btn-quiet btn-small', onClick: () => openExercise(exercise) }, `Essayer : ${exercise.title}`) : null,
+              ),
             );
           }),
         )
@@ -85,7 +94,7 @@ function highlightList(title, items, { exercises, empty }) {
   );
 }
 
-export function comparisonPanel({ result, history, exercises }) {
+export function comparisonPanel({ result, history, exercises, games = {} }) {
   const comparison = result.comparison;
   if (!comparison) return null;
   const series = history.filter((b) => b.completedAt <= result.completedAt).reverse().slice(-8);
@@ -121,7 +130,7 @@ export function comparisonPanel({ result, history, exercises }) {
       'div',
       { class: 'grid-2 evo-lists' },
       highlightList('Ce qui progresse', comparison.improvements, { exercises, empty: 'Pas de hausse nette cette fois-ci : les petites variations ne sont pas comptées.' }),
-      highlightList('Ce qui mérite ton attention', comparison.attention, { exercises, empty: 'Rien ne recule nettement depuis le dernier bilan.' }),
+      highlightList('Ce qui mérite ton attention', comparison.attention, { exercises, games, empty: 'Rien ne recule nettement depuis le dernier bilan.' }),
     ),
     h('p', { class: 'small muted', text: 'Une variation de moins de 5 points sur 100 est considérée comme stable : un curseur bouge toujours un peu d’une fois sur l’autre.' }),
   );

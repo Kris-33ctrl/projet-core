@@ -185,6 +185,31 @@ export function createBlob(container, state = {}) {
   );
   scene.add(mesh);
 
+  // Éclats : un point de lumière par pratique terminée (48 au plus à l'écran), en orbite lente.
+  const sparkles = new THREE.Group();
+  scene.add(sparkles);
+  let sparkleCount = -1;
+  function setEclats(n = 0) {
+    const count = Math.min(48, Math.max(0, n));
+    if (count === sparkleCount) return;
+    sparkleCount = count;
+    sparkles.clear();
+    if (!count) return;
+    const positions = new Float32Array(count * 3);
+    for (let i = 0; i < count; i++) {
+      // Répartition en spirale dorée sur une coquille autour du Core.
+      const y = 1 - (2 * (i + 0.5)) / count;
+      const r = Math.sqrt(1 - y * y);
+      const phi = i * Math.PI * (3 - Math.sqrt(5));
+      const radius = 1.45 + 0.12 * Math.sin(i * 1.7);
+      positions.set([Math.cos(phi) * r * radius, y * radius, Math.sin(phi) * r * radius], i * 3);
+    }
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    const material = new THREE.PointsMaterial({ color: 0xeaf6ff, size: 0.07, transparent: true, opacity: 0.9, depthWrite: false, blending: THREE.AdditiveBlending });
+    sparkles.add(new THREE.Points(geometry, material));
+  }
+
   const target = { levels: uniforms.uLevels.value.slice(), turb: 0.06, calm: 0 };
   const pointer = { x: 0, y: 0 };
 
@@ -197,6 +222,7 @@ export function createBlob(container, state = {}) {
     }
     if (typeof next.harmony === 'number') target.turb = 0.035 + (1 - next.harmony) * 0.16;
     target.calm = next.calm ? 1 : 0;
+    if (typeof next.eclats === 'number') setEclats(next.eclats);
   }
   apply(state);
 
@@ -239,6 +265,7 @@ export function createBlob(container, state = {}) {
     const follow = 1 - calm;
     mesh.rotation.y += ((pointer.x * 0.35 + Math.sin(t * 0.2) * 0.15) * follow - mesh.rotation.y) * ease * 0.6;
     mesh.rotation.x += ((pointer.y * 0.25) * follow - mesh.rotation.x) * ease * 0.6;
+    sparkles.rotation.y += dt * 0.08 * speed;
 
     renderer.render(scene, camera);
     raf = requestAnimationFrame(frame);

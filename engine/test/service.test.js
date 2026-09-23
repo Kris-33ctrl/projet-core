@@ -125,14 +125,21 @@ test('une semaine de check-ins en alerte avance le repérage', async () => {
   assert.ok((await service.today(user.id, day())).shield.vigilance.includes('daily_persistence'));
 });
 
-test('exercices : pratique enregistrée sans son contenu, effacement complet', async () => {
+test('exercices et jeux : pratique enregistrée sans son contenu, Atlas et éclats, effacement complet', async () => {
   const { service, day } = setup();
   const user = await newUser(service);
   await runBilan(service, user.id);
   const practice = await service.logPractice(user.id, 'coherence_cardiaque', { durationSec: 180 });
-  assert.deepEqual(Object.keys(practice).sort(), ['completedAt', 'durationSec', 'exerciseId', 'id', 'userId']);
+  assert.equal(practice.kind, 'exercise');
+  assert.equal(practice.eclats, 1);
   await assert.rejects(service.logPractice(user.id, 'inconnu'), { status: 400 });
-  assert.equal((await service.today(user.id, day())).practices.length, 1);
+  await assert.rejects(service.logPractice(user.id, 'notif'), { status: 400 }, 'un jeu pas encore prêt');
+  assert.ok((await service.logPractice(user.id, 'vague', { durationSec: 120 })).newCard);
+  assert.ok(!(await service.logPractice(user.id, 'vague', { durationSec: 60 })).newCard, 'rejouer ne redonne pas de carte');
+  const view = await service.today(user.id, day());
+  assert.equal(view.practices.length, 3);
+  assert.equal(view.eclats, 3);
+  assert.deepEqual(view.atlas, ['vague'], 'une carte par jeu, même joué deux fois');
   await service.eraseEverything();
   await assert.rejects(service.getUser(user.id), { status: 404 });
 });
@@ -149,4 +156,27 @@ test('chaque exercice explique pourquoi et se pratique en étapes connues', () =
     }
     for (const step of e.steps.filter((s) => s.type === 'pick')) assert.ok(ids.has(step.from), `${e.id} : ${step.from}`);
   }
+});
+
+test('en relais, la pratique reste discrète : ni éclat ni carte', async () => {
+  const { service, day } = setup();
+  const user = await newUser(service);
+  const { result } = await runBilan(service, user.id, (q) => (q.type === 'frequency' ? 3 : calm(q)));
+  assert.equal(result.triage.level, 'relais');
+  const practice = await service.logPractice(user.id, 'vague');
+  assert.ok(practice.quiet);
+  const view = await service.today(user.id, day());
+  assert.equal(view.eclats, 0);
+  assert.deepEqual(view.atlas, []);
+});
+
+test('mini-jeux : 3 minutes maximum, cartes savoir complètes et sourcées', async () => {
+  const { GAMES, READY_GAMES, MAX_GAME_SECONDS, sourceById } = await import('../src/index.js');
+  assert.deepEqual(READY_GAMES.map((g) => g.id), ['vague', 'onglets', 'surf']);
+  assert.equal(GAMES.length, 10);
+  for (const g of READY_GAMES) {
+    assert.ok(Math.max(...g.minutes) * 60 <= MAX_GAME_SECONDS, `${g.id} : 3 minutes max`);
+    assert.ok(g.card.title && g.card.notion && g.card.fact && g.card.takeaway, `${g.id} : carte complète`);
+  }
+  for (const g of GAMES) for (const id of g.card.sources) assert.ok(sourceById[id], `${g.id} → ${id}`);
 });

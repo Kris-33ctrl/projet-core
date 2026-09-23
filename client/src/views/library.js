@@ -2,6 +2,7 @@
 
 import { h } from '../dom.js';
 import { openExercise } from '../components/exercise.js';
+import { knowledgeCard } from '../games/shell.js';
 
 const KIND = { exercice: 'Exercice', outil: 'Outil', article: 'À lire' };
 
@@ -21,8 +22,54 @@ export function exerciseCard(exercise, { practiced = false } = {}) {
   );
 }
 
-export function renderLibrary(root, { meta, today, onBack }) {
-  const practiced = new Set((today?.practices ?? []).map((p) => p.exerciseId));
+export function gameCard(game, { played = false, onPlay }) {
+  return h(
+    'button',
+    { type: 'button', class: 'nudge game-tile', style: { '--c': `var(--${game.sphere})` }, onClick: onPlay },
+    h('span', { class: 'nudge-meta' }, h('span', { text: 'Mini-jeu' }), h('span', { text: `${Math.max(...game.minutes)} min max` }), played ? h('span', { class: 'done-chip', text: 'carte obtenue' }) : null),
+    h('h3', { text: game.title }),
+    h('span', { class: 'small muted', text: game.summary }),
+  );
+}
+
+// L'Atlas : une carte par mini-jeu. Obtenue, elle se relit ; à venir, elle attise la curiosité.
+export function atlasPanel(meta, today, { onPlay }) {
+  const unlocked = new Set(today?.atlas ?? []);
+  return h(
+    'section',
+    { class: 'panel glass', 'aria-labelledby': 'atlas-title' },
+    h(
+      'div',
+      { class: 'panel-head' },
+      h('h2', { id: 'atlas-title', text: 'Ton Atlas' }),
+      h('span', { class: 'small muted', text: `${unlocked.size} carte${unlocked.size > 1 ? 's' : ''} sur ${meta.games.length}` }),
+    ),
+    h('p', { class: 'small muted', text: 'Chaque mini-jeu dévoile une carte savoir : la notion qu’il fait ressentir, et sa source.' }),
+    h(
+      'div',
+      { class: 'atlas-grid' },
+      meta.games.map((game) => {
+        if (unlocked.has(game.id)) {
+          const card = knowledgeCard(game);
+          card.classList.add('compact');
+          return card;
+        }
+        return h(
+          'div',
+          { class: `atlas-slot${game.status === 'ready' ? ' ready' : ''}`, style: { '--c': `var(--${game.sphere})` } },
+          h('span', { class: 'eyebrow', text: game.status === 'ready' ? 'À découvrir' : 'Bientôt' }),
+          h('h3', { text: game.card.title }),
+          game.status === 'ready'
+            ? h('button', { type: 'button', class: 'btn btn-quiet btn-small', onClick: () => onPlay(game) }, `Jouer à ${game.title}`)
+            : h('span', { class: 'small muted', text: `Avec le jeu « ${game.title} »` }),
+        );
+      }),
+    ),
+  );
+}
+
+export function renderLibrary(root, { meta, today, onBack, onPlay }) {
+  const practiced = new Set((today?.practices ?? []).map((p) => p.activityId));
   const byId = Object.fromEntries(meta.exercises.map((e) => [e.id, e]));
   const recommended = (today?.lastBilan?.recommendations ?? []).map((id) => byId[id]).filter(Boolean);
   const card = (e) => exerciseCard(e, { practiced: practiced.has(e.id) });
@@ -35,10 +82,24 @@ export function renderLibrary(root, { meta, today, onBack }) {
       h(
         'div',
         { class: 'hero-copy' },
-        h('span', { class: 'eyebrow', text: `${meta.exercises.length} exercices` }),
+        h('span', { class: 'eyebrow', text: `${meta.games.filter((g) => g.status === 'ready').length} mini-jeux · ${meta.exercises.length} exercices` }),
         h('h1', { text: 'Ta boîte à outils' }),
-        h('p', { class: 'lead', text: 'Des exercices courts, à pratiquer quand tu veux. Chacun explique pourquoi il aide. Ce que tu écris pendant un exercice n’est jamais enregistré.' }),
+        h('p', { class: 'lead', text: 'Des mini-jeux et des exercices courts, à pratiquer quand tu veux. Chacun explique pourquoi il aide. Ce que tu écris ou joues n’est jamais enregistré : seulement le fait de l’avoir fait.' }),
       ),
+      h(
+        'section',
+        { class: 'panel glass', 'aria-labelledby': 'lib-games' },
+        h('h2', { id: 'lib-games', text: 'Mini-jeux' }),
+        h(
+          'div',
+          { class: 'library-grid' },
+          meta.games
+            .filter((g) => g.status === 'ready')
+            .filter((g) => today?.shield?.level !== 'relais' || meta.relayGames.includes(g.id))
+            .map((g) => gameCard(g, { played: (today?.atlas ?? []).includes(g.id), onPlay: () => onPlay(g) })),
+        ),
+      ),
+      atlasPanel(meta, today, { onPlay }),
       recommended.length
         ? h('section', { class: 'panel glass', 'aria-labelledby': 'lib-reco' }, h('h2', { id: 'lib-reco', text: 'Pour toi en ce moment' }), h('div', { class: 'library-grid' }, recommended.map(card)))
         : null,

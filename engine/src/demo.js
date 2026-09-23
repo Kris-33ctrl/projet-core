@@ -120,6 +120,7 @@ export async function seedDemo(store, scenarioId, { now = new Date() } = {}) {
     if (daysAgo % 3 === 0) {
       await service.logPractice(user.id, daysAgo % 2 ? 'coherence_cardiaque' : 'vider_la_tete', { durationSec: 180 });
     }
+    if (daysAgo === 4) await service.logPractice(user.id, 'vague', { durationSec: 120 });
   }
   return user.id;
 }

@@ -5,12 +5,15 @@ import { createBlob } from '../components/blob.js';
 import { openExercise } from '../components/exercise.js';
 import { carePanel } from '../components/resources.js';
 import { weekPanel, todayLevels } from '../components/week.js';
-import { exerciseCard } from './library.js';
+import { exerciseCard, gameCard } from './library.js';
 
-function toolboxPanel(meta, today, onLibrary) {
+function toolboxPanel(meta, today, onLibrary, onPlay) {
   const byId = Object.fromEntries(meta.exercises.map((e) => [e.id, e]));
-  const practiced = new Set(today.practices.map((p) => p.exerciseId));
+  const practiced = new Set(today.practices.map((p) => p.activityId));
   const picks = (today.lastBilan?.recommendations ?? []).map((id) => byId[id]).filter(Boolean).slice(0, 3);
+  const games = meta.games
+    .filter((g) => g.status === 'ready')
+    .filter((g) => today.shield.level !== 'relais' || meta.relayGames.includes(g.id));
   const n = today.practices.length;
   return h(
     'section',
@@ -19,10 +22,13 @@ function toolboxPanel(meta, today, onLibrary) {
       'div',
       { class: 'panel-head' },
       h('h2', { id: 'toolbox-title', text: 'Ta boîte à outils' }),
-      h('span', { class: 'small muted', text: n ? `${n} exercice${n > 1 ? 's' : ''} pratiqué${n > 1 ? 's' : ''} ces 7 derniers jours` : 'Des exercices courts, à faire quand tu veux' }),
+      h('span', { class: 'small muted', text: `${n ? `${n} pratique${n > 1 ? 's' : ''} ces 7 jours · ` : ''}Atlas : ${today.atlas.length} carte${today.atlas.length > 1 ? 's' : ''} sur ${meta.games.length}` }),
     ),
+    h('h3', { class: 'toolbox-sub', text: 'Mini-jeux' }),
+    h('div', { class: 'library-grid' }, games.map((g) => gameCard(g, { played: today.atlas.includes(g.id), onPlay: () => onPlay(g) }))),
+    picks.length ? h('h3', { class: 'toolbox-sub', text: 'Exercices pour toi' }) : null,
     picks.length ? h('div', { class: 'library-grid' }, picks.map((e) => exerciseCard(e, { practiced: practiced.has(e.id) }))) : null,
-    h('div', { class: 'actions' }, h('button', { type: 'button', class: 'btn btn-quiet', onClick: onLibrary }, `Voir les ${meta.exercises.length} exercices`)),
+    h('div', { class: 'actions' }, h('button', { type: 'button', class: 'btn btn-quiet', onClick: onLibrary }, 'Ouvrir la boîte à outils et l’Atlas')),
   );
 }
 
@@ -44,7 +50,7 @@ function privacyFooter(persistent, onErase) {
   );
 }
 
-function checkinCard(today, onCheckin) {
+function checkinCard(today, onCheckin, openSuggestion) {
   const done = today.checkin;
   if (done) {
     const suggestion = done.summary.suggestion;
@@ -57,8 +63,8 @@ function checkinCard(today, onCheckin) {
       suggestion
         ? h(
             'button',
-            { type: 'button', class: 'nudge', onClick: () => openExercise(suggestion) },
-            h('span', { class: 'nudge-meta' }, h('span', { text: 'Pour ta journée' }), h('span', { text: suggestion.duration })),
+            { type: 'button', class: 'nudge', onClick: () => openSuggestion(suggestion) },
+            h('span', { class: 'nudge-meta' }, h('span', { text: suggestion.type === 'game' ? 'Mini-jeu pour ta journée' : 'Pour ta journée' }), h('span', { text: suggestion.duration })),
             h('h3', { text: suggestion.title }),
             h('span', { class: 'small muted', text: suggestion.summary }),
           )
@@ -114,7 +120,9 @@ function bilanCard(today, pending, { onBilan, onResume, onOpenResult }, blobHost
   );
 }
 
-export function renderHome(root, { meta, today, history, pending, persistent, onCheckin, onBilan, onResume, onOpenResult, onLibrary, onErase }) {
+export function renderHome(root, { meta, today, history, pending, persistent, onCheckin, onBilan, onResume, onOpenResult, onLibrary, onErase, onPlay }) {
+  const gameById = Object.fromEntries(meta.games.map((g) => [g.id, g]));
+  const openSuggestion = (s) => (s.type === 'game' && gameById[s.id] ? onPlay(gameById[s.id]) : openExercise(s));
   const shield = today.shield;
   const blobHost = h('div', { class: 'mini-blob' });
   const bilanDays = history.map((b) => localDay(new Date(b.completedAt)));
@@ -125,9 +133,9 @@ export function renderHome(root, { meta, today, history, pending, persistent, on
       { class: 'dash' },
       h('header', { class: 'dash-head' }, h('span', { class: 'brand', text: 'core' }), h('span', { class: 'small muted', text: formatDay(today.day) })),
       shield.level === 'relais' ? carePanel(shield) : null,
-      h('div', { class: 'hub' }, checkinCard(today, onCheckin), bilanCard(today, pending, { onBilan, onResume, onOpenResult }, blobHost)),
+      h('div', { class: 'hub' }, checkinCard(today, onCheckin, openSuggestion), bilanCard(today, pending, { onBilan, onResume, onOpenResult }, blobHost)),
       weekPanel({ week: today.week, today: today.day, bilanDays }),
-      toolboxPanel(meta, today, onLibrary),
+      toolboxPanel(meta, today, onLibrary, onPlay),
       shield.level === 'soutien' ? carePanel(shield) : null,
       h('p', { class: 'disclaimer', text: meta.disclaimer }),
       privacyFooter(persistent, onErase),
@@ -135,7 +143,7 @@ export function renderHome(root, { meta, today, history, pending, persistent, on
   );
 
   const blob = today.lastBilan
-    ? createBlob(blobHost, { levels: today.lastBilan.spheres, harmony: today.lastBilan.harmony, calm: shield.pauseGamification })
+    ? createBlob(blobHost, { levels: today.lastBilan.spheres, harmony: today.lastBilan.harmony, calm: shield.pauseGamification, eclats: today.eclats })
     : null;
   return () => blob?.destroy();
 }

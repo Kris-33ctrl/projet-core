@@ -13,6 +13,8 @@ import { openHelp } from './components/resources.js';
 import { configureExercises } from './components/exercise.js';
 import { renderLibrary } from './views/library.js';
 import { renderSources } from './views/sources.js';
+import { openGame, configureGames } from './games/shell.js';
+import { configureEvolution } from './components/evolution.js';
 
 // Si le serveur ne répond pas, le bouton « Besoin d'aide » doit quand même fonctionner.
 const FALLBACK_HELP = {
@@ -34,6 +36,20 @@ const state = { meta: null, user: null, history: [], pending: null, persistent: 
 configureExercises({
   onPractice: (exerciseId, durationSec) => state.user && api.logPractice(state.user.id, exerciseId, { durationSec }).catch(() => {}),
 });
+
+// Mini-jeux : la fin d'une partie débloque une carte et un éclat ; l'écran d'accueil se met à jour ensuite.
+configureGames({ onPlayed: (gameId, durationSec) => (state.user ? api.logPractice(state.user.id, gameId, { durationSec }) : Promise.resolve(null)) });
+configureEvolution({ onPlay: (game) => play(game, { refresh: false }) });
+
+function play(game, { refresh = true } = {}) {
+  openGame(game, {
+    onClose: refresh ? guard(() => showHome()) : () => {},
+    onAtlas: guard(async () => {
+      state.today = await api.today(state.user.id, localDay());
+      showLibrary();
+    }),
+  });
+}
 let teardown = null;
 
 function mount(render) {
@@ -161,13 +177,27 @@ async function showHome(view = null) {
       onOpenResult: guard(openResult),
       onLibrary: guard(showLibrary),
       onErase: guard(eraseEverything),
+      onPlay: (game) => play(game),
     }),
   );
 }
 
 async function showLibrary() {
-  state.today ??= await api.today(state.user.id, localDay());
-  mount((el) => renderLibrary(el, { meta: state.meta, today: state.today, onBack: guard(() => showHome()) }));
+  state.today = await api.today(state.user.id, localDay());
+  mount((el) =>
+    renderLibrary(el, {
+      meta: state.meta,
+      today: state.today,
+      onBack: guard(() => showHome()),
+      onPlay: (game) =>
+        openGame(game, {
+          onClose: guard(async () => {
+            state.today = await api.today(state.user.id, localDay());
+            showLibrary();
+          }),
+        }),
+    }),
+  );
 }
 
 function showSources() {

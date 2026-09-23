@@ -161,7 +161,12 @@ export function renderDashboard(root, { meta, result, history, onRestart, onOpen
         ),
       ),
       gaugesPanel(result, meta),
-      comparisonPanel({ result, history, exercises: Object.fromEntries(meta.exercises.map((e) => [e.id, e])) }),
+      comparisonPanel({
+        result,
+        history,
+        exercises: Object.fromEntries(meta.exercises.map((e) => [e.id, e])),
+        games: Object.fromEntries(meta.games.filter((g) => g.status === 'ready').map((g) => [g.id, g])),
+      }),
       h('div', { class: 'grid-2' }, insightsPanel(result), nudgesPanel(result)),
       result.triage.level === 'soutien' ? carePanel(result.triage) : null,
       specialisedPanel(result.triage),

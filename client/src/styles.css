@@ -1753,3 +1753,329 @@ p {
     margin-bottom: 12px;
   }
 }
+
+/* ── Mini-jeux ───────────────────────────────────────────── */
+.game {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  background: linear-gradient(180deg, var(--ground), var(--ground-2));
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.game-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.game-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.game-stage {
+  display: grid;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.game-intro,
+.game-end {
+  max-width: 560px;
+  width: 100%;
+  margin: auto;
+  padding: 24px 20px;
+  display: grid;
+  gap: 16px;
+}
+
+.game-details {
+  margin: 0;
+  padding-left: 1.1em;
+  display: grid;
+  gap: 4px;
+  color: var(--ink-soft);
+}
+
+.game-canvas-wrap {
+  position: relative;
+  min-height: 0;
+}
+
+.game-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 320px;
+}
+
+.game-cue {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: var(--glass-strong);
+  border: 1px solid var(--glass-border);
+  font-family: var(--font-display);
+  font-size: 1rem;
+  text-align: center;
+  max-width: calc(100% - 32px);
+}
+
+.onglets-wrap .game-cue {
+  position: static;
+  transform: none;
+  margin: 12px auto 0;
+}
+
+.game-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 20px 16px;
+}
+
+.game-clock {
+  font-family: var(--font-display);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-soft);
+}
+
+.game-hold {
+  appearance: none;
+  border: 0;
+  border-radius: 999px;
+  padding: 18px 28px;
+  min-width: 220px;
+  font: 600 1rem/1 var(--font-display);
+  color: var(--accent-ink);
+  background: var(--accent);
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.game-hold.on {
+  transform: scale(1.04);
+  box-shadow: 0 0 0 10px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+.game-hold:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--accent) 55%, transparent);
+  outline-offset: 3px;
+}
+
+/* Onglets */
+.onglets-wrap {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  min-height: 0;
+}
+
+.onglets-field {
+  position: relative;
+  margin: 12px 20px 0;
+  min-height: 320px;
+  border-radius: var(--radius-l);
+  background: var(--glass);
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+
+.bubble {
+  position: absolute;
+  z-index: 1;
+  width: 46px;
+  height: 46px;
+  margin: -23px 0 0 -23px;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  background: radial-gradient(circle at 35% 30%, #ffffff, var(--machine) 70%);
+  box-shadow: 0 0 18px -2px var(--machine);
+  animation: bubble-in 0.25s ease both;
+}
+
+@keyframes bubble-in {
+  from {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+}
+
+.tab {
+  position: absolute;
+  z-index: 2;
+  max-width: 190px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--glass-strong);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  font-size: 0.86rem;
+  display: grid;
+  gap: 6px;
+  animation: bubble-in 0.3s ease both;
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+.tab::before {
+  content: '';
+  display: block;
+  width: 40px;
+  height: 4px;
+  border-radius: 4px;
+  background: var(--reseau);
+  opacity: 0.6;
+}
+
+.tab.nudge-tab {
+  animation: tab-nudge 0.5s ease;
+}
+
+@keyframes tab-nudge {
+  25% {
+    transform: translateX(-4px) rotate(-1deg);
+  }
+  75% {
+    transform: translateX(4px) rotate(1deg);
+  }
+}
+
+.onglets-field.tidying {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  align-content: start;
+  gap: 8px;
+  padding: 12px;
+  overflow-y: auto;
+}
+
+.tab.tidy {
+  position: static;
+  max-width: none;
+  animation: none;
+}
+
+.tab.filed {
+  transform: translate(-40px, 200px) scale(0.3);
+  opacity: 0;
+}
+
+.tab-moments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.tab-moments .chip {
+  padding: 4px 9px;
+  font-size: 0.76rem;
+}
+
+.onglets-notebook {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: var(--glass-strong);
+  border: 1px solid var(--line);
+  font-size: 0.88rem;
+}
+
+/* Cartes savoir et Atlas */
+.knowledge-card {
+  display: grid;
+  gap: 8px;
+  padding: 20px;
+  border-radius: var(--radius-l);
+  background: var(--glass-strong);
+  border: 1px solid color-mix(in srgb, var(--c) 45%, var(--line));
+  box-shadow: 0 16px 40px -24px var(--c);
+  animation: card-in 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.knowledge-card h3 {
+  font-size: 1.2rem;
+  font-weight: 400;
+}
+
+.knowledge-card a {
+  color: var(--accent);
+}
+
+.kc-notion {
+  font-weight: 700;
+}
+
+.kc-takeaway {
+  padding-left: 12px;
+  border-left: 3px solid var(--c);
+}
+
+.knowledge-card.compact {
+  animation: none;
+  box-shadow: none;
+  padding: 16px;
+  font-size: 0.92rem;
+}
+
+@keyframes card-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px) rotateX(20deg);
+  }
+}
+
+.atlas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 10px;
+  align-items: start;
+}
+
+.atlas-slot {
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+  border-radius: var(--radius-l);
+  border: 1.5px dashed color-mix(in srgb, var(--c) 35%, var(--line));
+  color: var(--ink-soft);
+  justify-items: start;
+}
+
+.atlas-slot h3 {
+  font-weight: 400;
+  font-size: 1rem;
+}
+
+.atlas-slot:not(.ready) {
+  opacity: 0.7;
+}
+
+.game-tile {
+  border-color: color-mix(in srgb, var(--c) 35%, var(--line));
+}
+
+.toolbox-sub {
+  font-size: 0.95rem;
+  color: var(--ink-soft);
+}
