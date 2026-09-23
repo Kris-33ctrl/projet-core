@@ -81,3 +81,10 @@ export const TRIAGE = {
   consecutiveWindowDays: 28, // deux PHQ-2 positifs d'affilée dans cette fenêtre → relais
   dailyPersistence: { alertDays: 7, windowDays: 14 }, // 7 jours d'alerte sur 14 → vigilance (PHQ-4 avancé)
 };
+
+// Comparaison d'un bilan à l'autre. Choix de conception : sous 5 points d'écart, la variation
+// n'est pas interprétée (bruit de mesure d'un curseur continu), la sphère est dite stable.
+export const COMPARISON = {
+  significant: 5,
+  maxHighlights: 3,
+};

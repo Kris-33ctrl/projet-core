@@ -7,21 +7,20 @@ Spécification de référence : `Projet Core - Synthèse et Feuille de Route.pdf
 
 ```bash
 npm install
-npm run dev        # API sur :3001 + front Vite sur http://localhost:5173
-npm test           # tests du moteur et de l'API
+npm run dev        # http://localhost:5173
+npm test           # tests du moteur et du service
 ```
 
-Mode « production » local : `npm run build && npm start`, puis http://localhost:3001.
+Version compilée : `npm run build && npm start`, puis http://localhost:4173.
 
-Prérequis : Node.js ≥ 22.13 (SQLite intégré via `node:sqlite`, aucune dépendance native).
+**Local-first** : tout tourne dans le navigateur. Les bilans, check-ins et exercices sont stockés dans IndexedDB, sur l'appareil ; aucune donnée de santé ne part sur un serveur. L'app compilée (`client/dist`) peut être hébergée comme un simple site statique. Prérequis : Node.js ≥ 20 pour développer.
 
 ## Organisation
 
 | Dossier   | Rôle |
 |-----------|------|
-| `engine/` | Moteur algorithmique pur, sans dépendance : banque de questions, flux adaptatif, jauges, impacts croisés, triage, recommandations. Testé avec `node:test`. |
-| `server/` | API Express + SQLite. Profils anonymes, bilans, réponses horodatées (utiles aux mesures IHM). |
-| `client/` | Front Vite en HTML/CSS/JS natif + Three.js : bilan en cartes, tableau de bord, forme 3D organique, cohérence cardiaque. |
+| `engine/` | Moteur pur, sans dépendance : questions, flux adaptatif, jauges, impacts croisés, triage, check-in, comparaison entre bilans, exercices, et le **service** applicatif (indépendant du stockage). Testé avec `node:test`. |
+| `client/` | Front Vite en HTML/CSS/JS natif + Three.js : bilan en cartes, check-in, tableau de bord, comparaison, forme 3D, boîte à outils. Stockage IndexedDB (`src/idb.js`). |
 
 ## Où modifier quoi
 
@@ -30,7 +29,9 @@ Prérequis : Node.js ≥ 22.13 (SQLite intégré via `node:sqlite`, aucune dépe
 - **Formules des jauges et impacts croisés** : `engine/src/scoring.js`.
 - **Seuils de triage** : `engine/src/config.js` (`TRIAGE`) ; logique et ressources d'aide : `engine/src/triage.js` (numéros à revérifier avant toute mise en ligne).
 - **Repérage PHQ-4** : `engine/src/screening.js`. **Check-in quotidien** : `engine/src/checkin.js`.
-- **Micro-aides (nudges)** : `engine/src/recommendations.js`.
+- **Exercices** (contenu, étapes, déclencheurs) : `engine/src/recommendations.js`. Lecteur interactif : `client/src/components/exercise.js`.
+- **Comparaison entre bilans** : `engine/src/comparison.js` (seuil de variation dans `config.js`, `COMPARISON`).
+- **Logique applicative** (profil, bilan, check-in, bouclier, effacement) : `engine/src/service.js`.
 
 ## Choix d'interprétation du PDF
 

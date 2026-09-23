@@ -2,9 +2,47 @@
 
 import { h, formatDay, localDay } from '../dom.js';
 import { createBlob } from '../components/blob.js';
-import { openNudge } from '../components/modal.js';
+import { openExercise } from '../components/exercise.js';
 import { carePanel } from '../components/resources.js';
 import { weekPanel, todayLevels } from '../components/week.js';
+import { exerciseCard } from './library.js';
+
+function toolboxPanel(meta, today, onLibrary) {
+  const byId = Object.fromEntries(meta.exercises.map((e) => [e.id, e]));
+  const practiced = new Set(today.practices.map((p) => p.exerciseId));
+  const picks = (today.lastBilan?.recommendations ?? []).map((id) => byId[id]).filter(Boolean).slice(0, 3);
+  const n = today.practices.length;
+  return h(
+    'section',
+    { class: 'panel glass', 'aria-labelledby': 'toolbox-title' },
+    h(
+      'div',
+      { class: 'panel-head' },
+      h('h2', { id: 'toolbox-title', text: 'Ta boîte à outils' }),
+      h('span', { class: 'small muted', text: n ? `${n} exercice${n > 1 ? 's' : ''} pratiqué${n > 1 ? 's' : ''} ces 7 derniers jours` : 'Des exercices courts, à faire quand tu veux' }),
+    ),
+    picks.length ? h('div', { class: 'library-grid' }, picks.map((e) => exerciseCard(e, { practiced: practiced.has(e.id) }))) : null,
+    h('div', { class: 'actions' }, h('button', { type: 'button', class: 'btn btn-quiet', onClick: onLibrary }, `Voir les ${meta.exercises.length} exercices`)),
+  );
+}
+
+// Local-first : les données restent sur l'appareil, et la personne peut tout effacer.
+function privacyFooter(persistent, onErase) {
+  const erase = h('button', { type: 'button', class: 'btn btn-ghost btn-small' }, 'Effacer toutes mes données');
+  const confirm = h('span', { class: 'erase-confirm', hidden: true },
+    h('span', { class: 'small', text: 'Tous tes bilans, check-ins et exercices seront supprimés de cet appareil. ' }),
+    h('button', { type: 'button', class: 'btn btn-quiet btn-small', onClick: onErase }, 'Oui, tout effacer'),
+    h('button', { type: 'button', class: 'btn btn-ghost btn-small', onClick: () => ((confirm.hidden = true), (erase.hidden = false)) }, 'Annuler'),
+  );
+  erase.addEventListener('click', () => ((erase.hidden = true), (confirm.hidden = false)));
+  return h(
+    'div',
+    { class: 'privacy' },
+    h('p', { class: 'small muted', text: persistent ? 'Tes données restent sur cet appareil : rien n’est envoyé sur internet.' : 'Ton navigateur bloque le stockage local : tes réponses disparaîtront à la fermeture de la page.' }),
+    erase,
+    confirm,
+  );
+}
 
 function checkinCard(today, onCheckin) {
   const done = today.checkin;
@@ -19,7 +57,7 @@ function checkinCard(today, onCheckin) {
       suggestion
         ? h(
             'button',
-            { type: 'button', class: 'nudge', onClick: () => openNudge(suggestion) },
+            { type: 'button', class: 'nudge', onClick: () => openExercise(suggestion) },
             h('span', { class: 'nudge-meta' }, h('span', { text: 'Pour ta journée' }), h('span', { text: suggestion.duration })),
             h('h3', { text: suggestion.title }),
             h('span', { class: 'small muted', text: suggestion.summary }),
@@ -76,7 +114,7 @@ function bilanCard(today, pending, { onBilan, onResume, onOpenResult }, blobHost
   );
 }
 
-export function renderHome(root, { meta, today, history, pending, onCheckin, onBilan, onResume, onOpenResult }) {
+export function renderHome(root, { meta, today, history, pending, persistent, onCheckin, onBilan, onResume, onOpenResult, onLibrary, onErase }) {
   const shield = today.shield;
   const blobHost = h('div', { class: 'mini-blob' });
   const bilanDays = history.map((b) => localDay(new Date(b.completedAt)));
@@ -89,8 +127,10 @@ export function renderHome(root, { meta, today, history, pending, onCheckin, onB
       shield.level === 'relais' ? carePanel(shield) : null,
       h('div', { class: 'hub' }, checkinCard(today, onCheckin), bilanCard(today, pending, { onBilan, onResume, onOpenResult }, blobHost)),
       weekPanel({ week: today.week, today: today.day, bilanDays }),
+      toolboxPanel(meta, today, onLibrary),
       shield.level === 'soutien' ? carePanel(shield) : null,
       h('p', { class: 'disclaimer', text: meta.disclaimer }),
+      privacyFooter(persistent, onErase),
     ),
   );
 

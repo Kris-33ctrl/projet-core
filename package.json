@@ -3,14 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "description": "Core : cartographier, comprendre et améliorer son bien-être, sans score punitif.",
-  "workspaces": ["engine", "server", "client"],
+  "workspaces": [
+    "engine",
+    "client"
+  ],
   "scripts": {
-    "dev": "concurrently -k -n api,web -c cyan,magenta \"npm:dev -w @core/server\" \"npm:dev -w @core/client\"",
+    "dev": "npm run dev -w @core/client",
     "build": "npm run build -w @core/client",
-    "start": "npm start -w @core/server",
-    "test": "npm test -w @core/engine && npm test -w @core/server"
-  },
-  "devDependencies": {
-    "concurrently": "^9.2.0"
+    "start": "npm run preview -w @core/client",
+    "test": "npm test -w @core/engine"
   }
 }

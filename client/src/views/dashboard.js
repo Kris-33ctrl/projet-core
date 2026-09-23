@@ -2,8 +2,9 @@
 
 import { h, sphereColor, formatDate, qualitative } from '../dom.js';
 import { createBlob } from '../components/blob.js';
-import { openNudge } from '../components/modal.js';
+import { openExercise } from '../components/exercise.js';
 import { carePanel, specialisedPanel } from '../components/resources.js';
+import { comparisonPanel } from '../components/evolution.js';
 
 const KIND_LABEL = { exercice: 'Exercice', article: 'À lire', outil: 'Outil' };
 
@@ -118,7 +119,7 @@ function nudgesPanel(result) {
           result.recommendations.map((n) =>
             h(
               'button',
-              { type: 'button', class: 'nudge', onClick: () => openNudge(n) },
+              { type: 'button', class: 'nudge', onClick: () => openExercise(n) },
               h('span', { class: 'nudge-meta' }, h('span', { text: KIND_LABEL[n.kind] ?? n.kind }), h('span', { text: n.duration })),
               h('h3', { text: n.title }),
               h('span', { class: 'small muted', text: n.summary }),
@@ -160,6 +161,7 @@ export function renderDashboard(root, { meta, result, history, onRestart, onOpen
         ),
       ),
       gaugesPanel(result, meta),
+      comparisonPanel({ result, history, exercises: Object.fromEntries(meta.exercises.map((e) => [e.id, e])) }),
       h('div', { class: 'grid-2' }, insightsPanel(result), nudgesPanel(result)),
       result.triage.level === 'soutien' ? carePanel(result.triage) : null,
       specialisedPanel(result.triage),

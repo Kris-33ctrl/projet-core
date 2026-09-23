@@ -1,5 +1,5 @@
 import './styles.css';
-import { api } from './api.js';
+import { api, isPersistent } from './api.js';
 import { h, localDay } from './dom.js';
 import { storage } from './storage.js';
 import { closeModal } from './components/modal.js';
@@ -10,6 +10,8 @@ import { renderProfile, renderUnderage } from './views/profile.js';
 import { renderHome } from './views/home.js';
 import { runCheckin } from './views/checkin.js';
 import { openHelp } from './components/resources.js';
+import { configureExercises } from './components/exercise.js';
+import { renderLibrary } from './views/library.js';
 
 // Si le serveur ne répond pas, le bouton « Besoin d'aide » doit quand même fonctionner.
 const FALLBACK_HELP = {
@@ -24,7 +26,12 @@ const FALLBACK_HELP = {
 document.getElementById('help-fab').addEventListener('click', () => openHelp(state.meta?.help ?? FALLBACK_HELP, state.user?.profile));
 
 const root = document.getElementById('app');
-const state = { meta: null, user: null, history: [], pending: null };
+const state = { meta: null, user: null, history: [], pending: null, persistent: true };
+
+// Seul le fait d'avoir terminé un exercice est noté, jamais ce qui a été écrit pendant.
+configureExercises({
+  onPractice: (exerciseId, durationSec) => state.user && api.logPractice(state.user.id, exerciseId, { durationSec }).catch(() => {}),
+});
 let teardown = null;
 
 function mount(render) {
@@ -42,8 +49,8 @@ function showError(err) {
         'div',
         { class: 'flow' },
         h('span', { class: 'brand', text: 'core' }),
-        h('p', { class: 'error-banner', role: 'alert', text: `Impossible de joindre le serveur Core : ${err.message}` }),
-        h('p', { class: 'small muted', text: 'Vérifie que l’API tourne (npm run dev à la racine du projet), puis recharge la page.' }),
+        h('p', { class: 'error-banner', role: 'alert', text: `Quelque chose s’est mal passé : ${err.message}` }),
+        h('p', { class: 'small muted', text: 'Tes données restent sur cet appareil. Recharge la page pour réessayer.' }),
         h('button', { type: 'button', class: 'btn btn-primary', onClick: boot }, 'Réessayer'),
       ),
     );
@@ -145,12 +152,27 @@ async function showHome(view = null) {
       today: state.today,
       history: state.history,
       pending: state.pending,
+      persistent: state.persistent,
       onCheckin: (plan) => showCheckin(plan),
       onBilan: guard(startAssessment),
       onResume: () => showFlow(state.pending),
       onOpenResult: guard(openResult),
+      onLibrary: guard(showLibrary),
+      onErase: guard(eraseEverything),
     }),
   );
+}
+
+async function showLibrary() {
+  state.today ??= await api.today(state.user.id, localDay());
+  mount((el) => renderLibrary(el, { meta: state.meta, today: state.today, onBack: guard(() => showHome()) }));
+}
+
+async function eraseEverything() {
+  await api.eraseEverything();
+  storage.set('userId', null);
+  storage.set('assessment', null);
+  location.reload();
 }
 
 function showCheckin(plan) {
@@ -196,6 +218,7 @@ function guard(fn) {
 async function boot() {
   try {
     state.meta = await api.meta();
+    state.persistent = await isPersistent();
     state.user = await ensureUser();
     state.history = await api.history(state.user.id);
     state.pending = await loadPending();
