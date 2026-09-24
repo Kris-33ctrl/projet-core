@@ -56,6 +56,8 @@ export function createEnveloppes({ stage, onEnd }) {
     let daily = TOTAL - FIXED - reserve;
     let left = reserve;
     let worry = 0;
+    let overflow = 0; // surprises que la réserve n'a pas absorbées
+    let shortDaily = false; // le quotidien a manqué (trop mis de côté)
     const log = h('ul', { class: 'enveloppes-log', 'aria-live': 'polite' });
     scene.replaceChildren(h('div', { class: 'envelopes' }), log, fog);
     controls.replaceChildren(h('span', { class: 'small muted', text: 'Le mois défile…' }));
@@ -74,6 +76,7 @@ export function createEnveloppes({ stage, onEnd }) {
           if (rest > 0) {
             daily -= rest;
             worry += 0.3;
+            overflow += 1;
             vibrate(30);
             line = `${week.label} : ${week.event.text.toLowerCase()} (${week.event.cost} jetons). La réserve ne suffit pas : ça déborde sur le quotidien.`;
           } else {
@@ -81,19 +84,26 @@ export function createEnveloppes({ stage, onEnd }) {
           }
           audio.blip('pop');
         }
-        if (daily < 0) worry += 0.2;
+        if (daily < 0) {
+          worry += 0.2;
+          shortDaily = true;
+        }
         setFog(worry);
         render();
         log.append(h('li', { text: line }));
-        if (i === WEEKS.length - 1) t.later(() => end(worry), 1200);
+        if (i === WEEKS.length - 1) t.later(() => end(worry, { overflow, shortDaily }), 1200);
       }, 1800 * (i + 1)),
     );
     cue.textContent = 'Regarde ce qui se passe quand les imprévus tombent.';
   }
 
-  function end(worry) {
+  function end(worry, { overflow, shortDaily }) {
     const calm = worry === 0;
-    cue.textContent = calm ? 'Toutes les surprises ont été absorbées : ta bande passante est restée claire.' : 'Les surprises non couvertes ont embrumé ta bande passante.';
+    cue.textContent = calm
+      ? 'Toutes les surprises ont été absorbées : ta bande passante est restée claire.'
+      : overflow
+        ? 'Les surprises non couvertes ont embrumé ta bande passante.'
+        : 'Le quotidien a manqué en fin de mois : ça aussi occupe l’esprit.';
     const again = h('button', { type: 'button', class: 'btn btn-quiet' }, 'Réajuster et rejouer');
     const finish = h('button', { type: 'button', class: 'btn btn-primary' }, 'Terminer');
     again.addEventListener('click', setup);
@@ -101,7 +111,9 @@ export function createEnveloppes({ stage, onEnd }) {
       onEnd({
         message: calm
           ? 'Ta réserve a absorbé les imprévus : rien n’est venu encombrer ta tête.'
-          : 'Sans réserve suffisante, chaque surprise déborde sur le reste et occupe l’esprit. Même une petite enveloppe « imprévus » change la donne.',
+          : overflow
+            ? 'Sans réserve suffisante, chaque surprise déborde sur le reste et occupe l’esprit. Même une petite enveloppe « imprévus » change la donne.'
+            : 'Tu avais prévu large pour les imprévus, et c’est le quotidien qui a manqué. Tout l’enjeu est l’équilibre : une réserve, sans étouffer le reste.',
         details: [`Ta réserve pour les imprévus : ${jetons(reserve)} sur ${TOTAL - FIXED} disponibles.`],
       }),
     );
