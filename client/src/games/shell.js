@@ -7,8 +7,26 @@ import { settings, canVibrate, audio } from './feedback.js';
 import { createVague } from './vague.js';
 import { createOnglets } from './onglets.js';
 import { createSurf } from './surf.js';
+import { createNotif } from './notif.js';
+import { createTribunal } from './tribunal.js';
+import { createSens } from './sens.js';
+import { createFilet } from './filet.js';
+import { createBatterie } from './batterie.js';
+import { createEnveloppes } from './enveloppes.js';
+import { createMiroir } from './miroir.js';
 
-const GAMES = { vague: createVague, onglets: createOnglets, surf: createSurf };
+const GAMES = {
+  vague: createVague,
+  onglets: createOnglets,
+  surf: createSurf,
+  notif: createNotif,
+  tribunal: createTribunal,
+  sens: createSens,
+  filet: createFilet,
+  batterie: createBatterie,
+  enveloppes: createEnveloppes,
+  miroir: createMiroir,
+};
 
 let onPlayed = async () => null;
 export function configureGames({ onPlayed: fn }) {

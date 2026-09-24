@@ -133,7 +133,7 @@ test('exercices et jeux : pratique enregistrée sans son contenu, Atlas et écla
   assert.equal(practice.kind, 'exercise');
   assert.equal(practice.eclats, 1);
   await assert.rejects(service.logPractice(user.id, 'inconnu'), { status: 400 });
-  await assert.rejects(service.logPractice(user.id, 'notif'), { status: 400 }, 'un jeu pas encore prêt');
+  await assert.rejects(service.logPractice(user.id, 'jeu-inconnu'), { status: 400 });
   assert.ok((await service.logPractice(user.id, 'vague', { durationSec: 120 })).newCard);
   assert.ok(!(await service.logPractice(user.id, 'vague', { durationSec: 60 })).newCard, 'rejouer ne redonne pas de carte');
   const view = await service.today(user.id, day());
@@ -172,11 +172,14 @@ test('en relais, la pratique reste discrète : ni éclat ni carte', async () => 
 
 test('mini-jeux : 3 minutes maximum, cartes savoir complètes et sourcées', async () => {
   const { GAMES, READY_GAMES, MAX_GAME_SECONDS, sourceById } = await import('../src/index.js');
-  assert.deepEqual(READY_GAMES.map((g) => g.id), ['vague', 'onglets', 'surf']);
+  assert.equal(READY_GAMES.length, 10, 'les 10 jeux sont jouables');
   assert.equal(GAMES.length, 10);
   for (const g of READY_GAMES) {
     assert.ok(Math.max(...g.minutes) * 60 <= MAX_GAME_SECONDS, `${g.id} : 3 minutes max`);
     assert.ok(g.card.title && g.card.notion && g.card.fact && g.card.takeaway, `${g.id} : carte complète`);
   }
   for (const g of GAMES) for (const id of g.card.sources) assert.ok(sourceById[id], `${g.id} → ${id}`);
+  const { EXERCISES, GAME_FOR_SUB, GAME_FOR_DAILY, RELAY_GAMES } = await import('../src/index.js').then(async (m) => ({ ...m, ...(await import('../src/games.js')) }));
+  for (const g of READY_GAMES) assert.ok(EXERCISES.some((e) => e.id === g.exercise), `${g.id} : exercice lié ${g.exercise}`);
+  for (const id of [...Object.values(GAME_FOR_SUB), ...Object.values(GAME_FOR_DAILY), ...RELAY_GAMES]) assert.ok(READY_GAMES.some((g) => g.id === id), `jeu inconnu : ${id}`);
 });
