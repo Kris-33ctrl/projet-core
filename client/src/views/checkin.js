@@ -3,6 +3,7 @@
 import { api } from '../api.js';
 import { h, sphereColor, localDay } from '../dom.js';
 import { questionCard, screeningIntro, isScreening } from '../components/question.js';
+import { brand } from '../components/brand.js';
 
 export function runCheckin(root, { meta, userId, plan, onDone, onExit }) {
   const labels = Object.fromEntries(meta.spheres.map((s) => [s.id, s.label]));
@@ -18,7 +19,7 @@ export function runCheckin(root, { meta, userId, plan, onDone, onExit }) {
     top.replaceChildren(
       index > 0
         ? h('button', { type: 'button', class: 'btn btn-ghost', onClick: () => ((index -= 1), show()) }, '← Retour')
-        : h('span', { class: 'brand', text: 'core' }),
+        : brand(),
       h(
         'div',
         { class: 'progress', 'aria-label': `Carte ${index + 1} sur ${plan.length}` },

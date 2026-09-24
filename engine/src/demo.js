@@ -24,8 +24,8 @@ export const DEMO_SCENARIOS = [
   },
   {
     id: 'bridage',
-    label: 'Machine épuisée (bridage)',
-    description: 'Sommeil et énergie au plus bas : Pilote et Réseau bridés à 80, message « batterie physique d’abord ».',
+    label: 'Braise épuisée (bridage)',
+    description: 'Sommeil et énergie au plus bas : Ciel et Lanternes bridés à 80, message « batterie physique d’abord ».',
     status: 'actif',
     sliders: { sleep: [70, 78, 82], body: [65, 75, 80], fuel: [60, 70, 75], mind: [40, 35, 25], social: [25, 20, 15], env: [35, 35, 35], reg: [40, 40, 40] },
     cards: { 'sleep.disturbances': ['wake', 'unrefreshing'], 'body.location': ['head'], 'fuel.deficits': ['hydration', 'rushed'] },
@@ -44,7 +44,7 @@ export const DEMO_SCENARIOS = [
   },
   {
     id: 'soupapes',
-    label: 'Soupapes en tension',
+    label: 'Souffle en tension',
     description: 'Écrans et échappatoires qui débordent : pas d’objectif de performance, lignes spécialisées proposées.',
     status: 'actif',
     sliders: { sleep: [45, 50, 50], body: [45, 45, 50], fuel: [45, 50, 55], mind: [50, 55, 55], social: [40, 40, 45], env: [40, 45, 45], reg: [70, 80, 85] },
@@ -54,7 +54,7 @@ export const DEMO_SCENARIOS = [
   },
   {
     id: 'tampon',
-    label: 'Réseau solide, charge élevée',
+    label: 'Lanternes solides, charge élevée',
     description: 'Charge mentale forte mais entourage très présent : effet tampon et conseil d’extériorisation.',
     status: 'autre',
     sliders: { sleep: [40, 40, 40], body: [35, 35, 35], fuel: [35, 35, 35], mind: [65, 72, 78], social: [15, 10, 8], env: [60, 70, 82], reg: [35, 35, 35] },

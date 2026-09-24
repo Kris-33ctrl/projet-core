@@ -2,8 +2,11 @@
 // Aucun score n'est affiché : la fin d'une partie débloque une carte (Atlas) et un éclat pour le Core.
 
 import { h } from '../dom.js';
-import { shortCite, doiUrl, MAX_GAME_SECONDS } from '@core/engine';
+import { MAX_GAME_SECONDS } from '@core/engine';
 import { settings, canVibrate, audio } from './feedback.js';
+import { revealCard, knowledge } from '../components/atlas-card.js';
+import { emblem } from '../art/emblems.js';
+import { landscape } from '../art/landscapes.js';
 import { createVague } from './vague.js';
 import { createOnglets } from './onglets.js';
 import { createSurf } from './surf.js';
@@ -31,27 +34,6 @@ const GAMES = {
 let onPlayed = async () => null;
 export function configureGames({ onPlayed: fn }) {
   onPlayed = fn;
-}
-
-export function knowledgeCard(game, { unlocked = true } = {}) {
-  const card = game.card;
-  return h(
-    'article',
-    { class: `knowledge-card${unlocked ? '' : ' locked'}`, style: { '--c': `var(--${game.sphere})` } },
-    h('span', { class: 'eyebrow', text: unlocked ? `Carte savoir · ${game.title}` : `À découvrir · ${game.title}` }),
-    h('h3', { text: card.title }),
-    unlocked && card.notion ? h('p', { class: 'kc-notion', text: card.notion }) : null,
-    unlocked && card.fact ? h('p', { class: 'muted', text: card.fact }) : null,
-    unlocked && card.takeaway ? h('p', { class: 'kc-takeaway', text: card.takeaway }) : null,
-    unlocked && card.sources?.length
-      ? h(
-          'p',
-          { class: 'small muted' },
-          'Source : ',
-          card.sources.map((s, i) => [i ? ' · ' : '', h('a', { href: doiUrl(s.doi), target: '_blank', rel: 'noopener', text: shortCite(s) })]),
-        )
-      : null,
-  );
 }
 
 function toggle(label, get, set) {
@@ -83,7 +65,7 @@ export function openGame(game, { onClose, onAtlas } = {}) {
   const header = h(
     'header',
     { class: 'game-head' },
-    h('div', {}, h('span', { class: 'eyebrow', text: 'Mini-jeu' }), h('h2', { text: game.title })),
+    h('div', { class: 'game-title', style: { '--c': `var(--${game.sphere})` } }, emblem(game.sphere), h('div', {}, h('span', { class: 'eyebrow', text: 'Mini-jeu' }), h('h2', { text: game.title }))),
     h(
       'div',
       { class: 'game-tools' },
@@ -137,6 +119,7 @@ export function openGame(game, { onClose, onAtlas } = {}) {
       h(
         'div',
         { class: 'game-intro' },
+        landscape(game.sphere),
         h('p', { class: 'lead', text: game.summary }),
         h('p', { class: 'muted', text: game.howTo }),
         durations,
@@ -158,25 +141,34 @@ export function openGame(game, { onClose, onAtlas } = {}) {
     const progression = await onPlayed(game.id, Math.round((Date.now() - startedAt) / 1000)).catch(() => null);
     const quiet = progression?.quiet;
     const atlasCount = progression?.atlas?.length;
-    const cardLine = progression?.newCard ? `Nouvelle carte dans ton Atlas (${atlasCount} sur 10)` : 'Cette carte est déjà dans ton Atlas';
+    const cardLine = progression?.newCard ? `Nouvelle carte dans ton Atlas : ${atlasCount} sur 10` : 'Cette carte est déjà dans ton Atlas';
+    const close = h('button', { type: 'button', class: 'btn btn-primary', onClick: exit }, 'Fermer');
     stage.replaceChildren(
       h(
         'div',
         { class: 'game-end' },
         h('p', { class: 'lead', text: outcome.message ?? 'C’est fait.' }),
         outcome.details?.length ? h('ul', { class: 'game-details' }, outcome.details.map((d) => h('li', { text: d }))) : null,
-        knowledgeCard(game),
-        quiet
-          ? null
-          : h('p', { class: 'small muted', text: `${cardLine} · un éclat de plus pour ton Core.` }),
         h(
           'div',
-          { class: 'actions' },
-          onAtlas ? h('button', { type: 'button', class: 'btn btn-quiet', onClick: () => (exit(), onAtlas()) }, 'Voir mon Atlas') : null,
-          h('button', { type: 'button', class: 'btn btn-primary', onClick: exit }, 'Fermer'),
+          { class: 'game-reveal' },
+          revealCard(game, { isNew: Boolean(progression?.newCard) }),
+          h(
+            'div',
+            { class: 'card-detail-text' },
+            quiet ? null : h('span', { class: 'done-chip', text: `${cardLine} · un éclat de plus pour ton Core` }),
+            knowledge(game),
+            h(
+              'div',
+              { class: 'actions' },
+              onAtlas ? h('button', { type: 'button', class: 'btn btn-quiet', onClick: () => (exit(), onAtlas()) }, 'Voir mon Atlas') : null,
+              close,
+            ),
+          ),
         ),
       ),
     );
+    close.focus();
   }
 
   document.body.append(root);

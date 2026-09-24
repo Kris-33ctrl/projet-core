@@ -2,6 +2,7 @@
 
 import { h, formatDay } from '../dom.js';
 import { shortCite, doiUrl } from '@core/engine';
+import { emblem } from '../art/emblems.js';
 
 function citation(source) {
   return h(
@@ -39,7 +40,8 @@ export function renderSources(root, { meta, onBack }) {
       h('header', { class: 'dash-head' }, h('button', { type: 'button', class: 'btn btn-ghost', onClick: onBack }, '← Retour')),
       h(
         'div',
-        { class: 'hero-copy' },
+        { class: 'hero-copy page-title' },
+        emblem('tablet'),
         h('span', { class: 'eyebrow', text: 'Transparence' }),
         h('h1', { text: 'Sources et méthode' }),
         h('p', {

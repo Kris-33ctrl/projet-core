@@ -2,11 +2,17 @@
 
 import { h, sphereColor, formatDate, qualitative } from '../dom.js';
 import { createBlob } from '../components/blob.js';
+import { brand } from '../components/brand.js';
+import { emblem } from '../art/emblems.js';
+import { dunes } from '../art/landscapes.js';
 import { openExercise } from '../components/exercise.js';
 import { carePanel, specialisedPanel } from '../components/resources.js';
 import { comparisonPanel } from '../components/evolution.js';
 
 const KIND_LABEL = { exercice: 'Exercice', article: 'À lire', outil: 'Outil' };
+
+// « Les Lanternes » → « les Lanternes » au milieu d'une phrase.
+const inSentence = (label) => label.replace(/^(La|Le|Les|L’)(?=\s|’|[A-ZÀ-Ý])/, (article) => article.toLowerCase());
 
 function headline(result, meta) {
   const label = (id) => meta.spheres.find((s) => s.id === id).label;
@@ -19,11 +25,11 @@ function headline(result, meta) {
     return { title: 'Prends soin de toi, à ton rythme.', text: "Aujourd'hui, l'essentiel n'est pas dans les jauges. Des personnes formées sont là pour prendre le relais." };
   }
   if (result.harmony >= 0.85 && weakValue >= 60) {
-    return { title: 'Ton Core est stable et bien ancré.', text: 'Tes cinq sphères se soutiennent mutuellement. Garde ce qui fonctionne.' };
+    return { title: 'Ton Core est stable et bien ancré.', text: 'Tes cinq paysages se soutiennent mutuellement. Garde ce qui fonctionne.' };
   }
   return {
-    title: `Ta force du moment : ${label(strongest)}.`,
-    text: `${label(weakest)} te demande un peu d'attention. C'est là que tes prochaines actions auront le plus d'effet.`,
+    title: `Ta force du moment : ${inSentence(label(strongest))}.`,
+    text: `C’est du côté de ${inSentence(label(weakest))} que tes prochaines actions auront le plus d’effet.`,
   };
 }
 
@@ -41,9 +47,9 @@ function bar(value, sphere, label, thin = false, cap = null) {
   );
 }
 
-// Icône batterie basse : la baisse vient de la Machine, pas de la volonté.
+// Icône batterie basse : la baisse vient du corps (la Braise), pas de la volonté.
 function batteryIcon() {
-  const span = h('span', { class: 'cap-icon', title: 'Capacité bridée : ta Machine est en mode économie d’énergie' });
+  const span = h('span', { class: 'cap-icon', title: 'Capacité bridée : ta Braise est en mode économie d’énergie' });
   span.innerHTML =
     '<svg viewBox="0 0 24 12" aria-hidden="true"><rect x="0.75" y="0.75" width="19.5" height="10.5" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="21.2" y="3.5" width="2" height="5" rx="1" fill="currentColor"/><rect x="2.75" y="2.75" width="4.5" height="6.5" rx="1" fill="currentColor"/></svg>';
   span.append(h('span', { text: 'bridée' }));
@@ -54,7 +60,7 @@ function gaugesPanel(result, meta) {
   return h(
     'section',
     { class: 'panel glass', 'aria-labelledby': 'g-title' },
-    h('div', { class: 'panel-head' }, h('h2', { id: 'g-title', text: 'Tes cinq sphères' }), h('span', { class: 'small muted', text: 'Touche une sphère pour la détailler' })),
+    h('div', { class: 'panel-head' }, h('h2', { id: 'g-title', text: 'Tes cinq paysages' }), h('span', { class: 'small muted', text: 'Touche un paysage pour le détailler' })),
     h(
       'div',
       { class: 'gauges' },
@@ -68,6 +74,7 @@ function gaugesPanel(result, meta) {
             h(
               'span',
               { class: 'gauge-name' },
+              emblem(s.id),
               h('strong', { text: s.label }),
               result.caps?.[s.id] ? batteryIcon() : h('span', { text: s.subtitle }),
             ),
@@ -84,15 +91,14 @@ function gaugesPanel(result, meta) {
         ),
       ),
     ),
-    h('p', { class: 'small muted', text: "Des jauges continues, sans note : ce qui compte, c'est l'équilibre entre les sphères et la façon dont il évolue." }),
+    h('p', { class: 'small muted', text: "Des jauges continues, sans note : ce qui compte, c'est l'équilibre entre les paysages et la façon dont il évolue." }),
     Object.keys(result.caps ?? {}).length
-      ? h('p', { class: 'small muted', text: 'Zone hachurée : capacité temporairement bridée, le temps que ta Machine se recharge. Ce n’est pas un manque, c’est un mode économie d’énergie.' })
+      ? h('p', { class: 'small muted', text: 'Zone hachurée : capacité temporairement bridée, le temps que ta Braise se recharge. Ce n’est pas un manque, c’est un mode économie d’énergie.' })
       : null,
   );
 }
 
 function insightsPanel(result) {
-  const color = { impact: 'var(--pilote)', reframe: 'var(--machine)', buffer: 'var(--reseau)', care: 'var(--care)', alert: 'var(--soupapes)' };
   return h(
     'section',
     { class: 'panel glass', 'aria-labelledby': 'i-title' },
@@ -101,7 +107,7 @@ function insightsPanel(result) {
       ? h(
           'ul',
           { class: 'insights' },
-          result.insights.map((i) => h('li', { class: 'insight' }, h('span', { class: 'dot', style: { '--c': color[i.kind] ?? 'var(--accent)' } }), h('span', { text: i.message }))),
+          result.insights.map((i) => h('li', { class: 'insight', style: { '--c': sphereColor(i.sphere ?? 'pilote') } }, emblem(i.sphere ?? 'core'), h('span', { text: i.message }))),
         )
       : h('p', { class: 'muted', text: 'Rien de particulier à signaler : tes sphères se soutiennent mutuellement.' }),
   );
@@ -142,7 +148,7 @@ export function renderDashboard(root, { meta, result, history, onRestart, onOpen
       h(
         'header',
         { class: 'dash-head' },
-        h('button', { type: 'button', class: 'btn btn-ghost brand', onClick: onHome }, 'core'),
+        brand({ onClick: onHome }),
         h('span', { class: 'small muted', text: `Bilan du ${formatDate(result.completedAt)}` }),
         h('button', { type: 'button', class: 'btn btn-quiet', onClick: onRestart }, 'Nouveau bilan'),
       ),
@@ -150,7 +156,7 @@ export function renderDashboard(root, { meta, result, history, onRestart, onOpen
       h(
         'section',
         { class: 'dash-hero' },
-        stage,
+        h('div', { class: 'hero-scene' }, dunes(), stage),
         h(
           'div',
           { class: 'hero-copy' },

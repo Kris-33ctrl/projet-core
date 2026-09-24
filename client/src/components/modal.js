@@ -20,9 +20,10 @@ function runCleanup() {
 }
 
 // Remplace le contenu sans refermer la fenêtre : on nettoie l'ancien contenu (minuteurs…) d'abord.
-export function openModal(content, onClose) {
+export function openModal(content, onClose, { wide = false } = {}) {
   const d = dialog();
   runCleanup();
+  d.classList.toggle('wide', wide);
   const close = h('button', { type: 'button', class: 'btn btn-ghost btn-small modal-close', onClick: closeModal }, 'Fermer');
   d.replaceChildren(h('div', { class: 'modal-body' }, close, content));
   cleanup = onClose ?? null;

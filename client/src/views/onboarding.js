@@ -3,6 +3,9 @@
 import { api } from '../api.js';
 import { h, sphereColor } from '../dom.js';
 import { createBlob } from '../components/blob.js';
+import { brand } from '../components/brand.js';
+import { emblem } from '../art/emblems.js';
+import { landscape } from '../art/landscapes.js';
 import { questionCard, screeningIntro, isScreening } from '../components/question.js';
 
 const PREFIX_TO_SPHERE = { sleep: 'machine', body: 'machine', fuel: 'machine', mind: 'pilote', phq: 'pilote', gad: 'pilote', social: 'reseau', env: 'cadre', reg: 'soupapes' };
@@ -37,7 +40,7 @@ export function runAssessment(root, { meta, assessment, onDone, onExit }) {
     top.replaceChildren(
       trail.length
         ? h('button', { type: 'button', class: 'btn btn-ghost', onClick: goBack }, '← Retour')
-        : h('span', { class: 'brand', text: 'core' }),
+        : brand(),
       progressBar(currentSphere),
       h('button', { type: 'button', class: 'btn btn-ghost', onClick: onExit, title: 'Tes réponses sont gardées, tu pourras reprendre plus tard.' }, 'Reprendre plus tard'),
     );
@@ -52,10 +55,15 @@ export function runAssessment(root, { meta, assessment, onDone, onExit }) {
       h(
         'section',
         { class: 'intro-card glass', style: { '--c': sphereColor(sphere.id) } },
-        h('span', { class: 'eyebrow', text: `Sphère ${sphere.index + 1} sur ${meta.spheres.length} · ${sphere.subtitle}` }),
-        h('h2', { text: sphere.label }),
-        h('p', { class: 'lead', text: sphere.intro.text }),
-        h('div', { class: 'actions' }, go),
+        landscape(sphere.id),
+        h(
+          'div',
+          { class: 'intro-body' },
+          h('span', { class: 'eyebrow', text: `Paysage ${sphere.index + 1} sur ${meta.spheres.length} · ${sphere.subtitle}` }),
+          h('h2', {}, emblem(sphere.id), sphere.label),
+          h('p', { class: 'lead', text: sphere.intro.text }),
+          h('div', { class: 'actions' }, go),
+        ),
       ),
     );
     go.focus({ preventScroll: true });
@@ -88,7 +96,7 @@ export function runAssessment(root, { meta, assessment, onDone, onExit }) {
     top.replaceChildren();
     const holder = h('div');
     stage.replaceChildren(
-      h('section', { class: 'computing' }, holder, h('h2', { text: 'Core assemble ton équilibre…' }), h('p', { class: 'muted', text: 'Tes réponses sont croisées entre les cinq sphères.' })),
+      h('section', { class: 'computing' }, holder, h('h2', { text: 'Core assemble ton équilibre…' }), h('p', { class: 'muted', text: 'Tes réponses sont croisées entre les cinq paysages.' })),
     );
     holder.style.width = 'min(260px, 70vw)';
     blob?.destroy();

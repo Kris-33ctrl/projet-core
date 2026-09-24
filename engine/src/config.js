@@ -8,20 +8,22 @@ export const SPHERES = ['machine', 'pilote', 'reseau', 'cadre', 'soupapes'];
 // Public cible (arbitrage du 23/09) : jeunes adultes, étudiant·es et actifs, 18 ans et plus.
 export const PROFILE_STATUSES = ['etudiant', 'actif', 'autre'];
 
+// Noms affichés (direction artistique « Le Voyage », 24/09/2026) : chaque sphère est un paysage.
+// Les identifiants internes restent ceux du Document Maître (machine, pilote…) : données et formules inchangées.
 export const SPHERE_LABELS = {
-  machine: 'La Machine',
-  pilote: 'Le Pilote',
-  reseau: 'Le Réseau',
-  cadre: 'Le Cadre',
-  soupapes: 'Les Soupapes',
+  machine: 'La Braise',
+  pilote: 'Le Ciel',
+  reseau: 'Les Lanternes',
+  cadre: 'L’Oasis',
+  soupapes: 'Le Souffle',
 };
 
 export const SPHERE_SUBTITLES = {
-  machine: 'Physiologie & vitalité',
-  pilote: 'Cognition & émotions',
-  reseau: 'Liens sociaux & affectifs',
-  cadre: 'Environnement & réalisation',
-  soupapes: 'Régulation & coping',
+  machine: 'Le corps et l’énergie',
+  pilote: 'L’esprit et les émotions',
+  reseau: 'Les liens qui t’entourent',
+  cadre: 'Ton terrain de vie',
+  soupapes: 'Relâcher la pression',
 };
 
 // Seuils de déclenchement des questions conditionnelles (PDF).

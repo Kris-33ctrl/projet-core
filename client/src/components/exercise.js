@@ -5,6 +5,7 @@
 import { h } from '../dom.js';
 import { shortCite, doiUrl } from '@core/engine';
 import { openModal, closeModal } from './modal.js';
+import { emblem } from '../art/emblems.js';
 
 const KIND = { exercice: 'Exercice', outil: 'Outil', article: 'À lire' };
 const reducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -318,8 +319,8 @@ export function openExercise(exercise) {
       h('p', { class: 'eyebrow', text: `${KIND[exercise.kind] ?? exercise.kind} · ${exercise.duration}` }),
       h('h2', { text: exercise.title }),
       h('p', { class: 'lead', text: exercise.summary }),
-      h('div', { class: 'ex-why' }, h('h3', { text: 'Pourquoi ça aide' }), h('p', { class: 'muted', text: exercise.why })),
-      h('div', { class: 'ex-why' }, h('h3', { text: 'Quand l’utiliser' }), h('p', { class: 'muted', text: exercise.when })),
+      h('div', { class: 'ex-why' }, h('h3', {}, emblem('core'), 'Pourquoi ça aide'), h('p', { class: 'muted', text: exercise.why })),
+      h('div', { class: 'ex-why' }, h('h3', {}, emblem('machine'), 'Quand l’utiliser'), h('p', { class: 'muted', text: exercise.when })),
       exercise.sources?.length
         ? h(
             'p',

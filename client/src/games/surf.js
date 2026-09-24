@@ -3,7 +3,7 @@
 // On ne « perd » jamais : s'il glisse, il remonte. L'envie passe sans qu'on y réponde.
 
 import { h } from '../dom.js';
-import { audio, vibrate, themeColors, fitCanvas, rgba } from './feedback.js';
+import { audio, vibrate, themeColors, fitCanvas, rgba, mix } from './feedback.js';
 
 const PROMPTS = [
   [0, 'Une envie arrive. Observe-la monter.'],
@@ -73,20 +73,32 @@ export function createSurf({ stage, seconds, onEnd }) {
     return H * 0.78 - height * Math.exp(-((x - crest) ** 2) / (2 * width * width));
   }
 
+  // Crépuscule violet, vague de l'envie en dégradé, planche de lumière.
+  const swell = mix(colors.soupapes, colors.sky3, 0.6);
+
   function draw(u) {
     const { width: W, height: H } = size();
     const sky = ctx.createLinearGradient(0, 0, 0, H);
-    sky.addColorStop(0, colors.ground);
-    sky.addColorStop(1, colors.ground2);
+    sky.addColorStop(0, colors.sky1);
+    sky.addColorStop(0.55, colors.sky2);
+    sky.addColorStop(1, mix(colors.soupapes, colors.sky3, 0.7));
     ctx.fillStyle = sky;
     ctx.fillRect(0, 0, W, H);
+
+    // Lune et quelques étoiles.
+    ctx.fillStyle = colors.sun;
+    ctx.beginPath();
+    ctx.arc(W * 0.8, H * 0.16, Math.min(W, H) * 0.035, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = rgba(colors.star, 0.8);
+    [[0.12, 0.1], [0.3, 0.2], [0.55, 0.08], [0.68, 0.26], [0.92, 0.32]].forEach(([x, y]) => ctx.fillRect(W * x, H * y, 2, 2));
 
     // Houle de fond.
     ctx.beginPath();
     ctx.moveTo(0, H);
     for (let x = 0; x <= W; x += 8) ctx.lineTo(x, H * 0.7 + Math.sin(x * 0.015 + t * 0.6) * 6);
     ctx.lineTo(W, H);
-    ctx.fillStyle = rgba(colors.soupapes, 0.18);
+    ctx.fillStyle = swell;
     ctx.fill();
 
     // La vague de l'envie.
@@ -96,40 +108,48 @@ export function createSurf({ stage, seconds, onEnd }) {
     for (let x = 0; x <= W; x += 6) ctx.lineTo(x, swellY(x, W, H, u) + Math.sin(x * 0.05 - t * 2) * ripple * u);
     ctx.lineTo(W, H);
     const sea = ctx.createLinearGradient(0, H * 0.3, 0, H);
-    sea.addColorStop(0, rgba(colors.soupapes, 0.75));
-    sea.addColorStop(1, rgba(colors.pilote, 0.9));
+    sea.addColorStop(0, colors.soupapes);
+    sea.addColorStop(1, mix(colors.pilote, colors.ink, colors.dark ? 0 : 0.25));
     ctx.fillStyle = sea;
     ctx.fill();
 
-    // Écume à la crête quand l'envie est forte.
+    // Écume de lumière à la crête quand l'envie est forte.
     if (u > 0.6) {
       ctx.beginPath();
       for (let x = W * 0.4; x <= W * 0.6; x += 5) ctx.lineTo(x, swellY(x, W, H, u) - 2);
-      ctx.strokeStyle = rgba(colors.ground, 0.8 * (u - 0.6) * 2.5);
+      ctx.strokeStyle = rgba(colors.sun, 0.85 * (u - 0.6) * 2.5);
       ctx.lineWidth = 4;
+      ctx.lineCap = 'round';
       ctx.stroke();
     }
 
-    // Surfeur : planche + silhouette abstraite, posés sur la pente.
+    // Surfeur : une planche de lumière et une silhouette simple, posées sur la pente.
     const sx = W / 2 + offset * W * 0.3;
     const sy = swellY(sx, W, H, u) + (sliding ? 16 : 0);
     const slope = (swellY(sx + 2, W, H, u) - swellY(sx - 2, W, H, u)) / 4;
+    const glow = ctx.createRadialGradient(sx, sy - 10, 0, sx, sy - 10, 44);
+    glow.addColorStop(0, rgba(colors.gold, sliding ? 0.2 : 0.5));
+    glow.addColorStop(1, rgba(colors.gold, 0));
+    ctx.fillStyle = glow;
+    ctx.fillRect(sx - 46, sy - 56, 92, 92);
     ctx.save();
     ctx.translate(sx, sy - 6);
     ctx.rotate(Math.atan(slope) + Math.sin(t * 9) * 0.12 * wobble);
-    ctx.fillStyle = colors.ink;
+    ctx.fillStyle = colors.sun;
     ctx.beginPath();
-    ctx.ellipse(0, 0, 24, 4, 0, 0, Math.PI * 2);
+    ctx.ellipse(0, 0, 25, 4.5, 0, 0, Math.PI * 2);
     ctx.fill();
+    const figure = colors.dark ? colors.ink : mix(colors.ink, colors.soupapes, 0.15);
+    ctx.fillStyle = figure;
     ctx.beginPath();
-    ctx.arc(0, -22, 6, 0, Math.PI * 2);
+    ctx.arc(0, -23, 6, 0, Math.PI * 2);
     ctx.fill();
-    ctx.lineWidth = 4;
+    ctx.lineWidth = 4.5;
     ctx.lineCap = 'round';
-    ctx.strokeStyle = colors.ink;
+    ctx.strokeStyle = figure;
     ctx.beginPath();
     ctx.moveTo(0, -16);
-    ctx.lineTo(0, -4);
+    ctx.lineTo(0, -5);
     ctx.stroke();
     ctx.restore();
   }

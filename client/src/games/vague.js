@@ -62,27 +62,39 @@ export function createVague({ stage, seconds, onEnd }) {
 
   const yFor = (v, H) => H * 0.74 - v * H * 0.36;
 
+  // Mer, ciel et bateau peints avec les jetons du thème : aube le jour, nuit bleutée le soir.
+  const seaFar = mix(colors.pilote, colors.sky3, 0.55);
+  const seaMid = mix(colors.pilote, colors.sun, 0.2);
+  const seaNear = mix(colors.pilote, colors.ink, 0.25);
+
   function draw() {
     const { width: W, height: H } = size();
-    const sky = ctx.createLinearGradient(0, 0, 0, H);
-    sky.addColorStop(0, colors.ground);
-    sky.addColorStop(1, colors.ground2);
+    const sky = ctx.createLinearGradient(0, 0, 0, H * 0.7);
+    sky.addColorStop(0, colors.sky1);
+    sky.addColorStop(0.6, colors.sky2);
+    sky.addColorStop(1, colors.sky3);
     ctx.fillStyle = sky;
     ctx.fillRect(0, 0, W, H);
 
-    // Soleil diffus : plus la mer est calme, plus il est présent.
-    const sun = ctx.createRadialGradient(W * 0.78, H * 0.22, 0, W * 0.78, H * 0.22, H * 0.35);
-    sun.addColorStop(0, rgba(colors.machine, 0.25 + 0.35 * calm));
-    sun.addColorStop(1, rgba(colors.machine, 0));
-    ctx.fillStyle = sun;
+    // Astre : plus la mer est calme, plus il rayonne.
+    const sx = W * 0.72;
+    const sy = H * 0.3;
+    const halo = ctx.createRadialGradient(sx, sy, 0, sx, sy, H * (0.28 + 0.12 * calm));
+    halo.addColorStop(0, rgba(colors.sunGlow, 0.55 + 0.35 * calm));
+    halo.addColorStop(1, rgba(colors.sunGlow, 0));
+    ctx.fillStyle = halo;
     ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = colors.sun;
+    ctx.beginPath();
+    ctx.arc(sx, sy, Math.min(W, H) * 0.06, 0, Math.PI * 2);
+    ctx.fill();
 
     // Mer : trois couches, agitées selon l'écart entre le souffle et le guide.
     const chop = (reduced ? 0.5 : 1) * (3 + 22 * (1 - calm));
     [
-      { base: 0.52, color: colors.pilote, alpha: 0.25, speed: 0.4, k: 0.012 },
-      { base: 0.62, color: colors.soupapes, alpha: 0.3, speed: 0.6, k: 0.018 },
-      { base: 0.8, color: colors.pilote, alpha: 0.45, speed: 0.8, k: 0.024 },
+      { base: 0.54, color: seaFar, speed: 0.4, k: 0.012 },
+      { base: 0.66, color: seaMid, speed: 0.6, k: 0.018 },
+      { base: 0.82, color: seaNear, speed: 0.8, k: 0.024 },
     ].forEach((layer, i) => {
       ctx.beginPath();
       ctx.moveTo(0, H);
@@ -92,47 +104,61 @@ export function createVague({ stage, seconds, onEnd }) {
       }
       ctx.lineTo(W, H);
       ctx.closePath();
-      ctx.fillStyle = rgba(layer.color, layer.alpha);
+      ctx.fillStyle = layer.color;
       ctx.fill();
     });
 
-    // Ligne guide : le rythme à suivre défile de droite à gauche (12 s visibles).
+    // Reflet de l'astre sur l'eau calme.
+    ctx.fillStyle = rgba(colors.sun, 0.25 + 0.4 * calm);
+    for (let k = 0; k < 3; k++) ctx.fillRect(sx - (26 - k * 7), H * (0.6 + k * 0.035), (26 - k * 7) * 2, 2);
+
+    // Ligne guide : une traînée de lumière qui défile de droite à gauche (12 s visibles).
     const boatX = W * 0.28;
     const pxPerSec = W / 12;
+    ctx.save();
+    ctx.setLineDash([1, 9]);
     ctx.beginPath();
     for (let x = 0; x <= W; x += 4) {
       const y = yFor(guide(t + (x - boatX) / pxPerSec).level, H);
       x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
     }
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 3.5;
     ctx.lineCap = 'round';
-    ctx.strokeStyle = rgba(colors.accent, 0.35 + 0.45 * calm);
+    ctx.strokeStyle = rgba(colors.gold, 0.55 + 0.4 * calm);
     ctx.stroke();
+    ctx.restore();
 
-    // Bateau : suit le souffle. Un halo apparaît quand il est sur la ligne.
+    // Bateau : suit le souffle. Sa voile s'illumine quand il est sur la ligne.
     const by = yFor(breath, H);
     const onLine = Math.abs(breath - guide(t).level) < 0.12;
     if (onLine) {
-      const halo = ctx.createRadialGradient(boatX, by, 0, boatX, by, 38);
-      halo.addColorStop(0, rgba(colors.accent, 0.45));
-      halo.addColorStop(1, rgba(colors.accent, 0));
-      ctx.fillStyle = halo;
-      ctx.fillRect(boatX - 40, by - 40, 80, 80);
+      const glow = ctx.createRadialGradient(boatX, by - 14, 0, boatX, by - 14, 46);
+      glow.addColorStop(0, rgba(colors.gold, 0.55));
+      glow.addColorStop(1, rgba(colors.gold, 0));
+      ctx.fillStyle = glow;
+      ctx.fillRect(boatX - 48, by - 62, 96, 96);
     }
     ctx.save();
     ctx.translate(boatX, by);
     ctx.rotate((holding ? -1 : 1) * 0.08);
-    ctx.fillStyle = colors.ink;
+    ctx.fillStyle = colors.dark ? mix(colors.ink, colors.pilote, 0.4) : colors.ink;
     ctx.beginPath();
     ctx.moveTo(-22, 0);
     ctx.quadraticCurveTo(0, 14, 22, 0);
     ctx.closePath();
     ctx.fill();
-    ctx.fillStyle = mix(colors.ground, colors.accent, 0.15);
+    ctx.fillStyle = colors.sun;
     ctx.beginPath();
     ctx.moveTo(-2, -4);
     ctx.lineTo(-2, -34);
     ctx.quadraticCurveTo(14, -18, 14, -4);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = mix(colors.sun, colors.gold, 0.4);
+    ctx.beginPath();
+    ctx.moveTo(-5, -4);
+    ctx.lineTo(-5, -24);
+    ctx.quadraticCurveTo(-14, -12, -14, -4);
     ctx.closePath();
     ctx.fill();
     ctx.restore();

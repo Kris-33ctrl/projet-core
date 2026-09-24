@@ -134,19 +134,28 @@ export const audio = {
   },
 };
 
-// Couleurs du thème courant, pour dessiner les scènes dans la palette de l'app.
+// Couleurs du thème courant (ciel, dunes, lumière), pour peindre les scènes dans la palette « Le Voyage ».
 export function themeColors() {
   const css = getComputedStyle(document.documentElement);
   const read = (name) => css.getPropertyValue(name).trim();
   return {
-    ground: read('--ground'),
-    ground2: read('--ground-2'),
+    sky1: read('--bg-1'),
+    sky2: read('--sky-2'),
+    sky3: read('--sky-3'),
+    ground: read('--bg-3'),
+    dune1: read('--dune-1'),
+    dune2: read('--dune-2'),
+    dune3: read('--dune-3'),
+    sun: read('--sun'),
+    sunGlow: read('--sun-glow'),
+    gold: read('--gold'),
+    star: read('--star'),
     ink: read('--ink'),
     inkSoft: read('--ink-soft'),
-    accent: read('--accent'),
     machine: read('--machine'),
     pilote: read('--pilote'),
     reseau: read('--reseau'),
+    cadre: read('--cadre'),
     soupapes: read('--soupapes'),
     dark: matchMedia('(prefers-color-scheme: dark)').matches,
   };

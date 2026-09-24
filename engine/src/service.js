@@ -143,7 +143,8 @@ export function createCoreService(store, { clock = () => new Date() } = {}) {
         help: { urgence: RESOURCES.urgence, ecoute: RESOURCES.ecoute, professionnels: RESOURCES.professionnels },
         exercises: EXERCISES,
         exerciseCategories: EXERCISE_CATEGORIES,
-        games: GAMES.map((g) => ({ ...g, card: { ...g.card, sources: g.card.sources.map((id) => sourceById[id]) } })),
+        // `number` : rang de la carte dans l'Atlas (I à X), dans l'ordre du catalogue.
+        games: GAMES.map((g, i) => ({ ...g, number: i + 1, card: { ...g.card, sources: g.card.sources.map((id) => sourceById[id]) } })),
         relayGames: RELAY_GAMES,
         sources: { list: SOURCES, categories: SOURCE_CATEGORIES, glossary: GLOSSARY, checkedOn: SOURCES_CHECKED_ON },
         disclaimer: DISCLAIMER,

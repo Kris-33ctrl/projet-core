@@ -102,7 +102,7 @@ const CATALOG = [
     duration: '2 min',
     summary: 'Quand le corps est à plat, chaque tâche mentale coûte plus cher.',
     why: 'Un corps fatigué dispose de moins de ressources pour gérer le stress et la concentration. Ce n’est pas un manque de volonté.',
-    when: 'Quand ta Machine est bridée ou que la fatigue s’accumule.',
+    when: 'Quand ta Braise est bridée ou que la fatigue s’accumule.',
     steps: [
       { type: 'read', paragraphs: ['Recharger la batterie physique d’abord rend tout le reste plus facile. Pas besoin de tout changer : trois leviers suffisent.'] },
       { type: 'check', prompt: 'Ce que tu tentes cette semaine', items: ['Une heure de lever stable', 'Un repas pris au calme par jour', 'Dix minutes dehors à la lumière du jour'] },
@@ -197,7 +197,7 @@ const CATALOG = [
     kind: 'exercice',
     category: 'relier',
     duration: '15 min',
-    summary: 'Ton réseau est solide : c’est le moment de t’appuyer dessus.',
+    summary: 'Tes liens sont solides : c’est le moment de t’appuyer dessus.',
     why: 'Mettre des mots sur une émotion en diminue souvent l’intensité. Partager ce qui pèse avec une personne de confiance rend la charge plus légère.',
     when: 'Quand tu traverses une zone de turbulences et que ton entourage est présent.',
     steps: [

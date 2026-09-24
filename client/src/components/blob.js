@@ -1,6 +1,7 @@
 // Représentation 3D organique du « Core » : une forme abstraite qui remplace les scores chiffrés.
 // Chaque sphère pousse un lobe dans sa direction : une sphère ressourcée gonfle, une sphère sollicitée se creuse.
 // Plus les jauges sont déséquilibrées, plus la surface ondule. Une jauge bien remplie ne donne jamais de rouge.
+// Direction « Le Voyage » : le Core est un astre. Ses couleurs sont adoucies vers la lumière, son bord est doré.
 
 import * as THREE from 'three';
 
@@ -73,7 +74,7 @@ float radius(vec3 n) {
     r += (uLevels[i] - 0.55) * 0.46 * pow(d, 3.0);
   }
   r += snoise(n * 1.5 + vec3(uTime * 0.11)) * uTurb;
-  r += snoise(n * 3.1 - vec3(uTime * 0.07)) * uTurb * 0.35;
+  r += snoise(n * 2.6 - vec3(uTime * 0.07)) * uTurb * 0.2;
   return r * (1.0 + uBreath);
 }
 vec3 displaced(vec3 n) { return n * radius(n); }
@@ -113,12 +114,15 @@ void main() {
   vec3 N = normalize(vNormal);
   vec3 V = normalize(vView);
   vec3 L = normalize(vec3(0.35, 0.8, 0.6));
-  float fres = pow(1.0 - max(dot(N, V), 0.0), 2.4);
-  float diff = max(dot(N, L), 0.0) * 0.5 + 0.5;
-  float spec = pow(max(dot(reflect(-L, N), V), 0.0), 28.0) * 0.4;
-  vec3 col = vColor * (0.5 + 0.5 * diff) + uRim * fres * 0.85 + spec;
+  float fres = pow(1.0 - max(dot(N, V), 0.0), 2.2);
+  float diff = max(dot(N, L), 0.0) * 0.45 + 0.55;
+  float spec = pow(max(dot(reflect(-L, N), V), 0.0), 22.0) * 0.28;
+  // Teintes des sphères adoucies vers une lumière chaude : un astre, pas un objet plastique.
+  vec3 base = mix(vColor, vec3(1.0, 0.95, 0.86), 0.18);
+  vec3 col = base * (0.78 + 0.32 * diff) + uRim * fres * 0.9 + spec;
+  // Mode calme (relais) : l'astre pâlit en clair de lune, sans devenir gris.
   float lum = dot(col, vec3(0.299, 0.587, 0.114));
-  col = mix(col, vec3(lum), uCalm * 0.55);
+  col = mix(col, vec3(lum) * vec3(1.02, 0.98, 0.9) + vec3(0.06, 0.05, 0.03), uCalm * 0.6);
   gl_FragColor = vec4(col, 1.0);
 }
 `;
@@ -131,10 +135,15 @@ function directions() {
   });
 }
 
-function cssColor(name, fallback) {
-  const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-  return new THREE.Color(value || fallback);
-}
+// Teintes de l'astre : les couleurs des sphères en version lumineuse, identiques de jour comme de nuit.
+// (Les teintes de jour de l'interface, plus sombres pour le contraste du texte, donneraient un astre gris.)
+const STAR_COLORS = {
+  machine: 0xf0a07e,
+  pilote: 0x8fa8f2,
+  reseau: 0xecc36a,
+  cadre: 0x62cbb9,
+  soupapes: 0xc39cf0,
+};
 
 function webglAvailable() {
   try {
@@ -170,12 +179,12 @@ export function createBlob(container, state = {}) {
 
   const uniforms = {
     uDirs: { value: directions() },
-    uColors: { value: SPHERE_ORDER.map((s) => cssColor(`--${s}`, '#5c80e6')) },
+    uColors: { value: SPHERE_ORDER.map((s) => new THREE.Color(STAR_COLORS[s])) },
     uLevels: { value: SPHERE_ORDER.map(() => 0.6) },
     uTime: { value: 0 },
     uTurb: { value: 0.06 },
     uBreath: { value: 0 },
-    uRim: { value: new THREE.Color(0xdff4ff) },
+    uRim: { value: new THREE.Color(0xffe2a8) },
     uCalm: { value: 0 },
   };
 
@@ -206,7 +215,7 @@ export function createBlob(container, state = {}) {
     }
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    const material = new THREE.PointsMaterial({ color: 0xeaf6ff, size: 0.07, transparent: true, opacity: 0.9, depthWrite: false, blending: THREE.AdditiveBlending });
+    const material = new THREE.PointsMaterial({ color: 0xffe2a8, size: 0.075, transparent: true, opacity: 0.9, depthWrite: false, blending: THREE.AdditiveBlending });
     sparkles.add(new THREE.Points(geometry, material));
   }
 
@@ -220,7 +229,8 @@ export function createBlob(container, state = {}) {
         return v === null || v === undefined ? 0.55 : v / 100;
       });
     }
-    if (typeof next.harmony === 'number') target.turb = 0.035 + (1 - next.harmony) * 0.16;
+    // Surface lisse quand tout est en équilibre, plus ondulée quand les sphères tirent chacune de leur côté.
+    if (typeof next.harmony === 'number') target.turb = 0.02 + (1 - next.harmony) * 0.11;
     target.calm = next.calm ? 1 : 0;
     if (typeof next.eclats === 'number') setEclats(next.eclats);
   }

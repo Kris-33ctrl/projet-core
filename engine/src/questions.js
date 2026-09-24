@@ -7,23 +7,23 @@ import { SCREENING_QUESTIONS, gateOpen } from './screening.js';
 
 export const SPHERE_INTROS = {
   machine: {
-    title: 'La Machine',
-    text: "On commence par le corps : le sommeil, le mouvement et l'énergie. C'est le socle sur lequel repose tout le reste.",
+    title: 'La Braise',
+    text: "On commence par le corps : le sommeil, le mouvement et l'énergie. C'est la braise qui alimente tout le reste du voyage.",
   },
   pilote: {
-    title: 'Le Pilote',
-    text: "Imagine ton esprit comme un système d'exploitation : sa bande passante, ses processus en arrière-plan, sa météo.",
+    title: 'Le Ciel',
+    text: 'Ton esprit comme un ciel : sa clarté, les nuages qui passent en arrière-plan, sa météo du moment.',
   },
   reseau: {
-    title: 'Le Réseau',
-    text: "Ici, on ne compte pas tes relations. On regarde si l'énergie circule bien dans ton filet de sécurité.",
+    title: 'Les Lanternes',
+    text: "Ici, on ne compte pas tes relations. On regarde si la lumière circule bien entre toi et les autres.",
   },
   cadre: {
-    title: 'Le Cadre',
+    title: 'L’Oasis',
     text: 'Le terrain sur lequel tu avances : tes projets, ta sécurité matérielle, ton lieu de vie.',
   },
   soupapes: {
-    title: 'Les Soupapes',
+    title: 'Le Souffle',
     text: 'Comment tu relâches la pression au quotidien. Aucun jugement ici, juste une cartographie.',
   },
 };

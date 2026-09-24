@@ -2,6 +2,7 @@
 
 import { h, sphereColor } from '../dom.js';
 import { slider, cards, frequency } from './inputs.js';
+import { emblem } from '../art/emblems.js';
 
 export const isScreening = (question) => question.type === 'frequency';
 
@@ -43,7 +44,7 @@ export function questionCard({ question, label, initial, onSubmit }) {
   const card = h(
     'section',
     { class: `question-card glass${isScreening(question) ? ' screening' : ''}`, style: { '--c': sphereColor(question.sphere) }, 'aria-labelledby': `h-${question.id}` },
-    h('div', { class: 'question-meta' }, h('span', { class: 'dot', style: { '--c': sphereColor(question.sphere) } }), h('span', { class: 'eyebrow', text: `${label} · ${question.section}` })),
+    h('div', { class: 'question-meta' }, emblem(question.sphere), h('span', { class: 'eyebrow', text: `${label} · ${question.section}` })),
     question.lead ? h('p', { class: 'question-lead', text: question.lead }) : null,
     heading,
     input.el,
@@ -58,14 +59,18 @@ export function screeningIntro(onContinue) {
   const go = h('button', { type: 'button', class: 'btn btn-primary', onClick: onContinue }, 'Continuer');
   const el = h(
     'section',
-    { class: 'intro-card glass', style: { '--c': 'var(--pilote)' } },
-    h('span', { class: 'eyebrow', text: 'Repérage · 1 minute' }),
-    h('h2', { text: 'Quatre questions un peu différentes' }),
-    h('p', {
-      class: 'lead',
-      text: "Elles viennent d'un outil de repérage utilisé par les professionnels de santé et portent sur les deux dernières semaines. Leur format ne change pas pour rester fiable. Il n'y a pas de bonne réponse.",
-    }),
-    h('div', { class: 'actions' }, go),
+    { class: 'intro-card plain glass', style: { '--c': 'var(--pilote)' } },
+    h(
+      'div',
+      { class: 'intro-body' },
+      h('span', { class: 'eyebrow', text: 'Repérage · 1 minute' }),
+      h('h2', {}, emblem('lantern'), 'Quatre questions un peu différentes'),
+      h('p', {
+        class: 'lead',
+        text: "Elles viennent d'un outil de repérage utilisé par les professionnels de santé et portent sur les deux dernières semaines. Leur format ne change pas pour rester fiable. Il n'y a pas de bonne réponse.",
+      }),
+      h('div', { class: 'actions' }, go),
+    ),
   );
   return { el, focus: () => go.focus({ preventScroll: true }) };
 }

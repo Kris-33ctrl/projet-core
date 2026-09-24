@@ -3,6 +3,7 @@
 
 import { h } from '../dom.js';
 import { openModal } from './modal.js';
+import { emblem } from '../art/emblems.js';
 
 const forProfile = (profile) => (r) => !r.profiles || r.profiles.includes(profile?.status);
 
@@ -32,7 +33,7 @@ export function carePanel(shield) {
   return h(
     'section',
     { class: 'panel glass care', 'aria-labelledby': `care-${shield.level}` },
-    h('h2', { id: `care-${shield.level}`, text: copy.title }),
+    h('div', { class: 'care-head' }, emblem('lantern'), h('h2', { id: `care-${shield.level}`, text: copy.title })),
     h('p', { class: 'muted', text: copy.text }),
     h('div', { class: 'resources' }, shield.resources.map(resourceCard)),
   );
@@ -55,7 +56,7 @@ export function openHelp(help, profile) {
     list.length ? h('div', { class: 'help-group' }, h('h3', { text: title }), h('div', { class: 'resources' }, list.map(resourceCard))) : null;
   openModal([
     h('p', { class: 'eyebrow', text: 'Besoin d’aide' }),
-    h('h2', { text: 'Tu n’as pas à traverser ça seul·e.' }),
+    h('h2', { class: 'help-title' }, emblem('lantern'), 'Tu n’as pas à traverser ça seul·e.'),
     h('p', { class: 'muted', text: 'En cas de danger immédiat, appelle le 15 ou le 112. Sinon, choisis ce qui te convient, à ton rythme.' }),
     group('Tout de suite', help.urgence),
     group('Parler à quelqu’un', help.ecoute.filter(forProfile(profile))),

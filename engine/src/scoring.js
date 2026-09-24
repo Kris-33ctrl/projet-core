@@ -60,7 +60,7 @@ export const SUB_LABELS = {
   environnement: 'Cadre de vie',
   ecrans: 'Maîtrise des écrans',
   coping: "Capacité d'ajustement",
-  controle: 'Contrôle des soupapes',
+  controle: 'Échappatoires choisies',
 };
 
 const clamp = (v) => (v === null ? null : Math.min(100, Math.max(0, v)));
@@ -196,7 +196,7 @@ export function computeResult(rawAnswers) {
       kind: 'buffer',
       message: turbulent
         ? "Tu traverses une zone de turbulences, mais ton ancrage relationnel est solide. Pense à t'appuyer sur tes proches pour décharger ce stress."
-        : 'Ton réseau agit comme un amortisseur : il protège le reste de ton équilibre.',
+        : 'Tes Lanternes agissent comme un amortisseur : elles protègent le reste de ton équilibre.',
     });
   }
 
@@ -215,7 +215,7 @@ export function computeResult(rawAnswers) {
       sphere: 'pilote',
       kind: 'reframe',
       message:
-        "Ta Machine est en mode économie d'énergie : ta capacité de concentration et ton énergie sociale sont temporairement bridées (zone hachurée). Ce n'est pas ton mental qui flanche, c'est ta batterie physique qu'il faut recharger d'abord.",
+        "Ta Braise est en mode économie d'énergie : ta capacité de concentration et ton énergie sociale sont temporairement bridées (zone hachurée). Ce n'est pas ton mental qui flanche, c'est ta batterie physique qu'il faut recharger d'abord.",
     });
   }
 
@@ -256,7 +256,7 @@ export function computeResult(rawAnswers) {
       sphere: 'soupapes',
       kind: 'impact',
       message:
-        'Tes soupapes sont très sollicitées. Pour le moment, on met de côté les objectifs de performance et on privilégie de petites actions pour te reconnecter à toi.',
+        'Ton Souffle est très sollicité. Pour le moment, on met de côté les objectifs de performance et on privilégie de petites actions pour te reconnecter à toi.',
     });
   }
 

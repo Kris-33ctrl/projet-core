@@ -15,6 +15,9 @@ import { renderLibrary } from './views/library.js';
 import { renderSources } from './views/sources.js';
 import { openGame, configureGames } from './games/shell.js';
 import { configureEvolution } from './components/evolution.js';
+import { brand } from './components/brand.js';
+import { emblem } from './art/emblems.js';
+import { dunes } from './art/landscapes.js';
 
 // Si le serveur ne répond pas, le bouton « Besoin d'aide » doit quand même fonctionner.
 const FALLBACK_HELP = {
@@ -26,8 +29,14 @@ const FALLBACK_HELP = {
   professionnels: [],
 };
 
-document.getElementById('sources-link').addEventListener('click', () => state.meta && showSources());
-document.getElementById('help-fab').addEventListener('click', () => openHelp(state.meta?.help ?? FALLBACK_HELP, state.user?.profile));
+const sourcesLink = document.getElementById('sources-link');
+const helpFab = document.getElementById('help-fab');
+sourcesLink.prepend(emblem('tablet'));
+helpFab.prepend(emblem('lantern'));
+// L'horizon de fin de page : des dunes sous le lien vers les sources.
+document.querySelector('.site-footer').prepend(dunes({ motes: false }));
+sourcesLink.addEventListener('click', () => state.meta && showSources());
+helpFab.addEventListener('click', () => openHelp(state.meta?.help ?? FALLBACK_HELP, state.user?.profile));
 
 const root = document.getElementById('app');
 const state = { meta: null, user: null, history: [], pending: null, persistent: true };
@@ -66,7 +75,7 @@ function showError(err) {
       h(
         'div',
         { class: 'flow' },
-        h('span', { class: 'brand', text: 'core' }),
+        brand(),
         h('p', { class: 'error-banner', role: 'alert', text: `Quelque chose s’est mal passé : ${err.message}` }),
         h('p', { class: 'small muted', text: 'Tes données restent sur cet appareil. Recharge la page pour réessayer.' }),
         h('button', { type: 'button', class: 'btn btn-primary', onClick: boot }, 'Réessayer'),

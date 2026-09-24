@@ -64,19 +64,22 @@ export function createSens({ stage, seconds, onEnd }) {
   function draw() {
     const { width: W, height: H } = size();
     const glow = flies.length / TOTAL;
+    // Crépuscule : le ciel descend vers la nuit, les dunes s'éclairent à mesure que les lucioles s'allument.
     const sky = ctx.createLinearGradient(0, 0, 0, H);
-    sky.addColorStop(0, mix(colors.pilote, colors.ground, colors.dark ? 0.75 : 0.35));
-    sky.addColorStop(1, mix(colors.soupapes, colors.ground2, 0.55));
+    sky.addColorStop(0, mix(colors.pilote, '#1b1834', colors.dark ? 0.7 : 0.45));
+    sky.addColorStop(0.6, mix(colors.soupapes, colors.sky3, 0.55));
+    sky.addColorStop(1, colors.sky3);
     ctx.fillStyle = sky;
     ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = rgba(colors.star, 0.7);
+    [[0.08, 0.1], [0.24, 0.05], [0.42, 0.14], [0.63, 0.06], [0.78, 0.18], [0.94, 0.09]].forEach(([x, y]) => ctx.fillRect(W * x, H * y, 2, 2));
 
-    // Collines douces au premier plan, qui s'éclairent à mesure que les lucioles s'allument.
     [0.72, 0.8, 0.9].forEach((base, i) => {
       ctx.beginPath();
       ctx.moveTo(0, H);
       for (let x = 0; x <= W; x += 10) ctx.lineTo(x, H * base + Math.sin(x * (0.006 + i * 0.003) + i) * 18);
       ctx.lineTo(W, H);
-      ctx.fillStyle = mix(colors.machine, colors.ink, 0.55 - glow * 0.25 - i * 0.08);
+      ctx.fillStyle = mix([colors.dune1, colors.dune2, colors.dune3][i], '#1b1834', 0.55 - glow * 0.35 - i * 0.05);
       ctx.fill();
     });
 
@@ -84,12 +87,12 @@ export function createSens({ stage, seconds, onEnd }) {
       const dx = reduced ? 0 : Math.sin(t * 0.7 + f.phase) * 6;
       const dy = reduced ? 0 : Math.cos(t * 0.5 + f.phase) * 5;
       const pulse = 0.65 + 0.35 * Math.sin(t * 2 + f.phase);
-      const halo = ctx.createRadialGradient(f.x + dx, f.y + dy, 0, f.x + dx, f.y + dy, 22);
-      halo.addColorStop(0, rgba('#fff3b0', 0.9 * pulse));
+      const halo = ctx.createRadialGradient(f.x + dx, f.y + dy, 0, f.x + dx, f.y + dy, 24);
+      halo.addColorStop(0, rgba('#fff3b0', 0.95 * pulse));
       halo.addColorStop(0.35, rgba('#ffe27a', 0.45 * pulse));
       halo.addColorStop(1, rgba('#ffe27a', 0));
       ctx.fillStyle = halo;
-      ctx.fillRect(f.x + dx - 24, f.y + dy - 24, 48, 48);
+      ctx.fillRect(f.x + dx - 26, f.y + dy - 26, 52, 52);
     }
   }
 

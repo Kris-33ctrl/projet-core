@@ -4,6 +4,7 @@
 
 import { h, sphereColor, formatDate, qualitative } from '../dom.js';
 import { openExercise } from './exercise.js';
+import { emblem } from '../art/emblems.js';
 
 let playGame = null;
 export function configureEvolution({ onPlay }) {
@@ -119,7 +120,7 @@ export function comparisonPanel({ result, history, exercises, games = {} }) {
           h(
             'div',
             { class: 'evo-row' },
-            h('span', { class: 'evo-name' }, h('i', { class: 'dot', style: { '--c': sphereColor(s.id) } }), s.label),
+            h('span', { class: 'evo-name', style: { '--c': sphereColor(s.id) } }, emblem(s.id), s.label),
             dumbbell(s),
             h('span', { class: `trend trend-${s.trend}` }, h('span', { 'aria-hidden': 'true', text: TREND[s.trend].icon }), TREND[s.trend].label),
             withSparks ? sparkline(series.map((b) => ({ at: b.completedAt, value: b.spheres[s.id] ?? 0 })), s.id, s.label) : null,
