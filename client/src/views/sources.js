@@ -1,6 +1,6 @@
 // Sources et méthode : lexique des notions et bibliographie vérifiée, avec ce que chaque référence justifie.
 
-import { h, formatDay } from '../dom.js';
+import { h } from '../dom.js';
 import { shortCite, doiUrl } from '@core/engine';
 import { emblem } from '../art/emblems.js';
 
@@ -22,7 +22,7 @@ function citation(source) {
 }
 
 export function renderSources(root, { meta, onBack }) {
-  const { list, categories, glossary, checkedOn } = meta.sources;
+  const { list, categories, glossary } = meta.sources;
   const byId = Object.fromEntries(list.map((s) => [s.id, s]));
 
   const goTo = (id) => (event) => {
@@ -87,7 +87,6 @@ export function renderSources(root, { meta, onBack }) {
           h('ul', { class: 'sources' }, list.filter((s) => s.category === category.id).map(citation)),
         ),
       ),
-      h('p', { class: 'small muted', text: `${list.length} références, vérifiées le ${formatDay(checkedOn, { day: 'numeric', month: 'long', year: 'numeric' })} dans Crossref et Europe PMC. Le document de départ reste le Document Maître du projet.` }),
     ),
   );
 }
