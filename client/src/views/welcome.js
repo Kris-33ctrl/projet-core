@@ -6,7 +6,7 @@ import { brand } from '../components/brand.js';
 import { emblem } from '../art/emblems.js';
 import { landscape, dunes } from '../art/landscapes.js';
 
-export function renderWelcome(root, { meta, history, pending, onStart, onResume, onOpenResult }) {
+export function renderWelcome(root, { meta, history, pending, onStart, onResume, onOpenResult, onLibrary }) {
   const latest = history[0];
   const stage = h('div');
 
@@ -22,6 +22,8 @@ export function renderWelcome(root, { meta, history, pending, onStart, onResume,
       h('button', { type: 'button', class: 'btn btn-quiet', onClick: () => onOpenResult(latest.id), title: `Bilan du ${formatDate(latest.completedAt)}` }, 'Revoir mon dernier bilan'),
     );
   }
+  // Les mini-jeux restent accessibles sans passer par le bilan.
+  actions.push(h('button', { type: 'button', class: 'btn btn-ghost', onClick: onLibrary }, 'Accéder aux mini-jeux'));
 
   root.append(
     h(

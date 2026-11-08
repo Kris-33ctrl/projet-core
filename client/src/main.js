@@ -120,6 +120,7 @@ function showWelcome() {
       onStart: guard(startAssessment),
       onResume: () => showFlow(state.pending),
       onOpenResult: guard(openResult),
+      onLibrary: guard(showLibrary),
     }),
   );
 }
@@ -197,7 +198,7 @@ async function showLibrary() {
     renderLibrary(el, {
       meta: state.meta,
       today: state.today,
-      onBack: guard(() => showHome()),
+      onBack: guard(() => (state.history.length ? showHome() : showWelcome())),
       onPlay: (game) =>
         openGame(game, {
           onClose: guard(async () => {
