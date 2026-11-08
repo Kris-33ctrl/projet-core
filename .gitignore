@@ -3,3 +3,6 @@ client/dist/
 
 .DS_Store
 *.log
+
+# Document personnel, ne pas publier
+*.pdf
